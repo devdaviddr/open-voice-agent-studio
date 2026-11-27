@@ -73,6 +73,26 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/internal/sessions/{session_id}/knowledge/search': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Search Knowledge
+     * @description Search only the sources attached to the session's agent, in its workspace (MVP FR-15).
+     */
+    post: operations['search_knowledge_internal_sessions__session_id__knowledge_search_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/v1/agents': {
     parameters: {
       query?: never
@@ -299,6 +319,59 @@ export interface paths {
     put?: never
     /** Signup */
     post: operations['signup_v1_auth_signup_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/knowledge': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Sources */
+    get: operations['list_sources_v1_knowledge_get']
+    put?: never
+    /** Upload */
+    post: operations['upload_v1_knowledge_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/knowledge/{source_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Read Source */
+    get: operations['read_source_v1_knowledge__source_id__get']
+    put?: never
+    post?: never
+    /** Delete Source */
+    delete: operations['delete_source_v1_knowledge__source_id__delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/knowledge/{source_id}/reindex': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Reindex */
+    post: operations['reindex_v1_knowledge__source_id__reindex_post']
     delete?: never
     options?: never
     head?: never
@@ -696,6 +769,11 @@ export interface components {
        */
       updated_at: string
     }
+    /** Body_upload_v1_knowledge_post */
+    Body_upload_v1_knowledge_post: {
+      /** File */
+      file: string
+    }
     /** BuiltinToolRef */
     'BuiltinToolRef-Input': {
       /**
@@ -1091,6 +1169,20 @@ export interface components {
        */
       type: 'handoff'
     }
+    /** Hit */
+    Hit: {
+      /** Score */
+      score: number
+      /** Source */
+      source: string
+      /**
+       * Source Id
+       * Format: uuid
+       */
+      source_id: string
+      /** Text */
+      text: string
+    }
     /** Issue */
     Issue: {
       /** Code */
@@ -1108,10 +1200,50 @@ export interface components {
        */
       severity: 'error' | 'warning'
     }
+    /** KnowledgeQuery */
+    KnowledgeQuery: {
+      /**
+       * K
+       * @default 4
+       */
+      k: number
+      /** Query */
+      query: string
+      /** Source Ids */
+      source_ids?: string[] | null
+    }
     /** KnowledgeRef */
     KnowledgeRef: {
       /** Source Id */
       source_id: string
+    }
+    /** KnowledgeSourceOut */
+    KnowledgeSourceOut: {
+      /** Bytes */
+      bytes: number
+      /** Chunks */
+      chunks: number
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string
+      /** Error */
+      error: string | null
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+      /** Mime */
+      mime: string
+      /** Name */
+      name: string
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: 'pending' | 'indexing' | 'ready' | 'failed'
     }
     /** Limits */
     'Limits-Input': {
@@ -1939,6 +2071,7 @@ export type AgentStepDataOutput = components['schemas']['AgentStepData-Output']
 export type AgentStepNodeInput = components['schemas']['AgentStepNode-Input']
 export type AgentStepNodeOutput = components['schemas']['AgentStepNode-Output']
 export type AgentSummary = components['schemas']['AgentSummary']
+export type BodyUploadV1KnowledgePost = components['schemas']['Body_upload_v1_knowledge_post']
 export type BuiltinToolRefInput = components['schemas']['BuiltinToolRef-Input']
 export type BuiltinToolRefOutput = components['schemas']['BuiltinToolRef-Output']
 export type CelConditionInput = components['schemas']['CelCondition-Input']
@@ -1970,8 +2103,11 @@ export type HandoffDataInput = components['schemas']['HandoffData-Input']
 export type HandoffDataOutput = components['schemas']['HandoffData-Output']
 export type HandoffNodeInput = components['schemas']['HandoffNode-Input']
 export type HandoffNodeOutput = components['schemas']['HandoffNode-Output']
+export type Hit = components['schemas']['Hit']
 export type Issue = components['schemas']['Issue']
+export type KnowledgeQuery = components['schemas']['KnowledgeQuery']
 export type KnowledgeRef = components['schemas']['KnowledgeRef']
+export type KnowledgeSourceOut = components['schemas']['KnowledgeSourceOut']
 export type LimitsInput = components['schemas']['Limits-Input']
 export type LimitsOutput = components['schemas']['Limits-Output']
 export type LivePointer = components['schemas']['LivePointer']
@@ -2150,6 +2286,43 @@ export interface operations {
           [name: string]: unknown
         }
         content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  search_knowledge_internal_sessions__session_id__knowledge_search_post: {
+    parameters: {
+      query?: never
+      header?: {
+        'x-internal-key'?: string | null
+      }
+      path: {
+        session_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['KnowledgeQuery']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Hit'][]
+        }
       }
       /** @description Validation Error */
       422: {
@@ -2773,6 +2946,169 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['Me']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_sources_v1_knowledge_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['KnowledgeSourceOut'][]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  upload_v1_knowledge_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody: {
+      content: {
+        'multipart/form-data': components['schemas']['Body_upload_v1_knowledge_post']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['KnowledgeSourceOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  read_source_v1_knowledge__source_id__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        source_id: string
+      }
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['KnowledgeSourceOut']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_source_v1_knowledge__source_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        source_id: string
+      }
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  reindex_v1_knowledge__source_id__reindex_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        source_id: string
+      }
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      202: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['KnowledgeSourceOut']
         }
       }
       /** @description Validation Error */

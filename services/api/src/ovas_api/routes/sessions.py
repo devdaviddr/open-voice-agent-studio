@@ -11,6 +11,7 @@ from sqlalchemy import delete, select
 
 from ovas_api.auth import CurrentUser, Db
 from ovas_api.config import get_settings
+from ovas_api.knowledge.service import knowledge_ids
 from ovas_api.models import Agent, AgentVersion, Session, SessionEvent
 from ovas_api.routes.agents import get_agent
 from ovas_core.spec import AgentSpec
@@ -76,7 +77,10 @@ async def start_session(body: SessionStart, principal: CurrentUser, db: Db):
     if body.target == "draft":
         spec = agent.draft
         draft_revision = agent.draft_revision
-        issues = [i for i in validate(AgentSpec.model_validate(spec)) if i.severity == "error"]
+        known = await knowledge_ids(db, principal.workspace_id)
+        issues = [
+            i for i in validate(AgentSpec.model_validate(spec), known) if i.severity == "error"
+        ]
         if issues:
             problem = SessionNotRunnable(
                 detail="Fix the problems in the draft first.", issues=issues

@@ -28,5 +28,15 @@ class ApiClient:
         res = await self.http.post(f"/internal/sessions/{session_id}/end", json=body)
         res.raise_for_status()
 
+    async def search_knowledge(
+        self, session_id: str, query: str, source_ids: list[str] | None, k: int
+    ) -> list[dict[str, Any]]:
+        res = await self.http.post(
+            f"/internal/sessions/{session_id}/knowledge/search",
+            json={"query": query, "source_ids": source_ids, "k": k},
+        )
+        res.raise_for_status()
+        return res.json()
+
     async def aclose(self) -> None:
         await self.http.aclose()

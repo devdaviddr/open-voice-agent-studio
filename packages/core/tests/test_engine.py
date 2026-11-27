@@ -147,6 +147,42 @@ async def test_end_session_tool_ends_the_conversation():
     assert llm.stream_calls[0]["tools"][0]["function"]["name"] == "end_session"
 
 
+async def test_search_knowledge_tool_answers_from_documents():  # MVP AC-14
+    spec = blank_spec()
+    spec.tools = [BuiltinToolRef(name="search_knowledge")]
+    llm = FakeLlm(
+        replies=[
+            ToolCall(id="1", name="search_knowledge", arguments={"query": "cleaning price"}),
+            "A cleaning costs 145 dollars.",
+        ],
+        choices=[0],
+    )
+    searches: list[tuple[str, list[str] | None, int]] = []
+
+    async def search(query, sources, k):
+        searches.append((query, sources, k))
+        return [{"source": "handbook.md", "text": "A standard cleaning costs 145 dollars."}]
+
+    rec = Recorder()
+    session = TextSession(spec=spec, llm=llm, emit=rec, search_knowledge=search)
+    await session.start()
+    await session.user_message("How much is a cleaning?")
+    assert searches == [("cleaning price", None, 4)]
+    assert rec.of("knowledge")[0]["results"][0]["source"] == "handbook.md"
+    assert rec.of("assistant_message")[-1]["text"] == "A cleaning costs 145 dollars."
+    tool_reply = next(m for m in llm.stream_calls[-1]["messages"] if m["role"] == "tool")
+    assert "145 dollars" in tool_reply["content"]
+
+
+async def test_search_tool_hidden_without_a_search_function():
+    spec = blank_spec()
+    spec.tools = [BuiltinToolRef(name="search_knowledge")]
+    llm = FakeLlm(replies=["Hi.", "OK."], choices=[0])
+    session, _ = await run(spec, llm)
+    await session.user_message("Hello")
+    assert llm.stream_calls[-1]["tools"] is None
+
+
 def test_render_and_coerce():
     assert render("Hi {{a.b}} {{missing}}!", {"a": {"b": "Ana"}}) == "Hi Ana !"
     assert coerce(VariableDef(name="d", type="date"), "2026-12-01") == "2026-12-01"

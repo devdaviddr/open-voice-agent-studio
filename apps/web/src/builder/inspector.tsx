@@ -1,8 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
+import { Link } from '@tanstack/react-router'
 import { CircleAlert, Plus, Trash2 } from 'lucide-react'
 import { cn } from 'cn'
 import type { VariableDef } from '@/gen/agent-spec'
+import { knowledgeQuery } from '@/api/knowledge'
+import { StatusBadge } from '@/routes/knowledge-page'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -68,6 +72,120 @@ function VoiceSelect({ value, onChange, id }: { value: string; onChange: (v: str
 }
 
 const num = (v: number | readonly number[]) => (Array.isArray(v) ? v[0] : (v as number))
+
+/** Attach workspace documents to the agent (MVP FR-15). Attaching enables `search_knowledge`. */
+function KnowledgeSection() {
+  const { data: sources = [] } = useQuery(knowledgeQuery)
+  const attached = useBuilder((s) => s.meta.knowledge)
+  const update = useBuilder((s) => s.updateMeta)
+  const ids = new Set(attached.map((r) => r.source_id))
+  const missing = attached.filter((r) => !sources.some((s) => s.id === r.source_id))
+  function toggle(id: string, on: boolean) {
+    update((m) => {
+      const knowledge = on
+        ? [...m.knowledge, { source_id: id }]
+        : m.knowledge.filter((r) => r.source_id !== id)
+      const hasTool = m.tools.some((t) => t.kind === 'builtin' && t.name === 'search_knowledge')
+      const tools =
+        on && !hasTool
+          ? [...m.tools, { kind: 'builtin' as const, name: 'search_knowledge' as const }]
+          : m.tools
+      return { ...m, knowledge, tools }
+    })
+  }
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="text-muted-foreground mb-1.5 text-xs">Knowledge</legend>
+      {sources.length === 0 && (
+        <p className="text-muted-foreground text-[11px]">
+          No documents yet.{' '}
+          <Link to="/knowledge" className="underline underline-offset-2">
+            Upload some
+          </Link>{' '}
+          for the agent to answer from.
+        </p>
+      )}
+      {sources.map((src) => (
+        <label key={src.id} className="flex items-center gap-2 text-xs">
+          <Checkbox checked={ids.has(src.id)} onCheckedChange={(checked) => toggle(src.id, checked)} />
+          <span className="min-w-0 flex-1 truncate">{src.name}</span>
+          {src.status !== 'ready' && <StatusBadge source={src} />}
+        </label>
+      ))}
+      {missing.map((r) => (
+        <div key={r.source_id} className="text-destructive flex items-center gap-2 text-xs">
+          <CircleAlert className="size-3.5 shrink-0" />
+          <span className="flex-1">A deleted document is still attached.</span>
+          <Button variant="link" size="xs" onClick={() => toggle(r.source_id, false)}>
+            Detach
+          </Button>
+        </div>
+      ))}
+      {sources.length > 0 && (
+        <p className="text-muted-foreground text-[11px]">
+          Attached documents are searchable with the search_knowledge tool. Narrow them per step.
+        </p>
+      )}
+    </fieldset>
+  )
+}
+
+/** Per Agent step: which attached documents to use, and automatic top-k insertion. */
+function StepKnowledge({
+  value,
+  topK,
+  onChange,
+}: {
+  value: { source_id: string }[] | null | undefined
+  topK: number
+  onChange: (patch: Record<string, unknown>) => void
+}) {
+  const { data: sources = [] } = useQuery(knowledgeQuery)
+  const attached = useBuilder((s) => s.meta.knowledge)
+  if (attached.length === 0) return null
+  const name = (id: string) => sources.find((s) => s.id === id)?.name ?? 'Deleted document'
+  const chosen = value ? new Set(value.map((r) => r.source_id)) : null
+  return (
+    <fieldset className="flex flex-col gap-2">
+      <legend className="text-muted-foreground mb-1.5 text-xs">Knowledge in this step</legend>
+      <label className="flex items-center gap-2 text-xs">
+        <Checkbox
+          checked={chosen === null}
+          onCheckedChange={(checked) => onChange({ knowledge: checked ? null : [...attached] })}
+        />
+        All attached documents
+      </label>
+      {chosen &&
+        attached.map((r) => (
+          <label key={r.source_id} className="flex items-center gap-2 pl-5 text-xs">
+            <Checkbox
+              checked={chosen.has(r.source_id)}
+              onCheckedChange={(checked) =>
+                onChange({
+                  knowledge: checked
+                    ? [...(value ?? []), r]
+                    : (value ?? []).filter((x) => x.source_id !== r.source_id),
+                })
+              }
+            />
+            <span className="truncate">{name(r.source_id)}</span>
+          </label>
+        ))}
+      <Field
+        label={topK ? `Insert the top ${topK} passages every turn` : 'Insert passages automatically: off'}
+        hint="Adds the best matches for the caller's last message to the prompt, without a tool call."
+      >
+        <Slider
+          min={0}
+          max={10}
+          step={1}
+          value={topK}
+          onValueChange={(v) => onChange({ auto_knowledge_top_k: num(v) })}
+        />
+      </Field>
+    </fieldset>
+  )
+}
 
 function AgentSettingsPanel() {
   const meta = useBuilder((s) => s.meta)
@@ -145,6 +263,7 @@ function AgentSettingsPanel() {
           onChange={(e) => set({ history_token_budget: Math.max(500, Number(e.target.value) || 500) })}
         />
       </Field>
+      <KnowledgeSection />
       <div className="flex items-center justify-between gap-3">
         <Label htmlFor="memory" className="flex flex-col items-start gap-0.5">
           <span>Long-term memory</span>
@@ -320,6 +439,7 @@ function NodeInspector({ node }: { node: FlowNode }) {
               onChange={(e) => set({ prompt: e.target.value })}
             />
           </Field>
+          <StepKnowledge value={node.data.knowledge} topK={node.data.auto_knowledge_top_k} onChange={set} />
           <div className="flex items-center justify-between">
             <Label htmlFor="voice-override" className="text-xs">
               Different voice for this step
