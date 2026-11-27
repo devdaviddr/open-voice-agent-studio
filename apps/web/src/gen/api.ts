@@ -59,6 +59,23 @@ export interface paths {
     patch: operations['patch_agent_v1_agents__agent_id__patch']
     trace?: never
   }
+  '/v1/agents/{agent_id}/diff': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Diff Specs */
+    get: operations['diff_specs_v1_agents__agent_id__diff_get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/v1/agents/{agent_id}/draft': {
     parameters: {
       query?: never
@@ -97,6 +114,23 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/v1/agents/{agent_id}/live': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    /** Set Live */
+    put: operations['set_live_v1_agents__agent_id__live_put']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/v1/agents/{agent_id}/validate': {
     parameters: {
       query?: never
@@ -108,6 +142,61 @@ export interface paths {
     put?: never
     /** Validate Spec */
     post: operations['validate_spec_v1_agents__agent_id__validate_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/agents/{agent_id}/versions': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Versions */
+    get: operations['list_versions_v1_agents__agent_id__versions_get']
+    put?: never
+    /** Publish */
+    post: operations['publish_v1_agents__agent_id__versions_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/agents/{agent_id}/versions/{number}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Read Version */
+    get: operations['read_version_v1_agents__agent_id__versions__number__get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/agents/{agent_id}/versions/{number}/restore': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Restore
+     * @description Copy a version into the draft. Bumps the revision, so open builders see a conflict.
+     */
+    post: operations['restore_v1_agents__agent_id__versions__number__restore_post']
     delete?: never
     options?: never
     head?: never
@@ -514,6 +603,37 @@ export interface components {
        */
       kind: 'cel'
     }
+    /** Change */
+    Change: {
+      /**
+       * Change
+       * @enum {string}
+       */
+      change: 'added' | 'removed' | 'changed'
+      /**
+       * Fields
+       * @default []
+       */
+      fields: components['schemas']['FieldChange'][]
+      /** Id */
+      id: string
+      /**
+       * Kind
+       * @enum {string}
+       */
+      kind: 'node' | 'edge' | 'setting' | 'variable' | 'other'
+      /** Label */
+      label: string
+    }
+    /** Diff */
+    Diff: {
+      /** Changes */
+      changes: components['schemas']['Change'][]
+      /** Source */
+      source: string
+      /** Target */
+      target: string
+    }
     /** Draft */
     'Draft-Input': {
       /** Revision */
@@ -707,6 +827,17 @@ export interface components {
        */
       type: 'extract'
     }
+    /** FieldChange */
+    FieldChange: {
+      /** After */
+      after?: unknown
+      /** Before */
+      before?: unknown
+      /** Lines */
+      lines?: string[] | null
+      /** Path */
+      path: string
+    }
     /** Graph */
     'Graph-Input': {
       /** Edges */
@@ -844,6 +975,11 @@ export interface components {
        */
       max_session_seconds: number
     }
+    /** LivePointer */
+    LivePointer: {
+      /** Version */
+      version: number
+    }
     /** LlmCondition */
     'LlmCondition-Input': {
       /**
@@ -967,6 +1103,18 @@ export interface components {
       say: string
       /** Term */
       term: string
+    }
+    /** Publish */
+    Publish: {
+      /** Message */
+      message: string
+    }
+    /** PublishRejected */
+    PublishRejected: {
+      /** Detail */
+      detail: string
+      /** Issues */
+      issues: components['schemas']['Issue'][]
     }
     /** RecordingSettings */
     'RecordingSettings-Input': {
@@ -1280,6 +1428,39 @@ export interface components {
        */
       type: 'string' | 'number' | 'boolean' | 'date' | 'email' | 'enum' | 'object'
     }
+    /** Version */
+    Version: {
+      /** Author */
+      author: string | null
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string
+      /** Is Live */
+      is_live: boolean
+      /** Message */
+      message: string
+      /** Number */
+      number: number
+      spec: components['schemas']['AgentSpec-Output']
+    }
+    /** VersionSummary */
+    VersionSummary: {
+      /** Author */
+      author: string | null
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string
+      /** Is Live */
+      is_live: boolean
+      /** Message */
+      message: string
+      /** Number */
+      number: number
+    }
     /** VoiceSettings */
     'VoiceSettings-Input': {
       /**
@@ -1372,6 +1553,8 @@ export type BuiltinToolRefInput = components['schemas']['BuiltinToolRef-Input']
 export type BuiltinToolRefOutput = components['schemas']['BuiltinToolRef-Output']
 export type CelConditionInput = components['schemas']['CelCondition-Input']
 export type CelConditionOutput = components['schemas']['CelCondition-Output']
+export type Change = components['schemas']['Change']
+export type Diff = components['schemas']['Diff']
 export type DraftInput = components['schemas']['Draft-Input']
 export type DraftOutput = components['schemas']['Draft-Output']
 export type DraftConflict = components['schemas']['DraftConflict']
@@ -1387,6 +1570,7 @@ export type ExtractDataInput = components['schemas']['ExtractData-Input']
 export type ExtractDataOutput = components['schemas']['ExtractData-Output']
 export type ExtractNodeInput = components['schemas']['ExtractNode-Input']
 export type ExtractNodeOutput = components['schemas']['ExtractNode-Output']
+export type FieldChange = components['schemas']['FieldChange']
 export type GraphInput = components['schemas']['Graph-Input']
 export type GraphOutput = components['schemas']['Graph-Output']
 export type HttpValidationError = components['schemas']['HTTPValidationError']
@@ -1398,6 +1582,7 @@ export type Issue = components['schemas']['Issue']
 export type KnowledgeRef = components['schemas']['KnowledgeRef']
 export type LimitsInput = components['schemas']['Limits-Input']
 export type LimitsOutput = components['schemas']['Limits-Output']
+export type LivePointer = components['schemas']['LivePointer']
 export type LlmConditionInput = components['schemas']['LlmCondition-Input']
 export type LlmConditionOutput = components['schemas']['LlmCondition-Output']
 export type LlmSettingsInput = components['schemas']['LlmSettings-Input']
@@ -1410,6 +1595,8 @@ export type NoteNodeInput = components['schemas']['NoteNode-Input']
 export type NoteNodeOutput = components['schemas']['NoteNode-Output']
 export type Position = components['schemas']['Position']
 export type PronunciationEntry = components['schemas']['PronunciationEntry']
+export type Publish = components['schemas']['Publish']
+export type PublishRejected = components['schemas']['PublishRejected']
 export type RecordingSettingsInput = components['schemas']['RecordingSettings-Input']
 export type RecordingSettingsOutput = components['schemas']['RecordingSettings-Output']
 export type RouterData = components['schemas']['RouterData']
@@ -1435,6 +1622,8 @@ export type Validation = components['schemas']['Validation']
 export type ValidationError = components['schemas']['ValidationError']
 export type VariableDefInput = components['schemas']['VariableDef-Input']
 export type VariableDefOutput = components['schemas']['VariableDef-Output']
+export type Version = components['schemas']['Version']
+export type VersionSummary = components['schemas']['VersionSummary']
 export type VoiceSettingsInput = components['schemas']['VoiceSettings-Input']
 export type VoiceSettingsOutput = components['schemas']['VoiceSettings-Output']
 export type WorkspaceSettings = components['schemas']['WorkspaceSettings']
@@ -1632,6 +1821,44 @@ export interface operations {
       }
     }
   }
+  diff_specs_v1_agents__agent_id__diff_get: {
+    parameters: {
+      query: {
+        /** @description 'draft' or a version number */
+        from: string
+        /** @description 'draft' or a version number */
+        to?: string
+      }
+      header?: never
+      path: {
+        agent_id: string
+      }
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Diff']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
   read_draft_v1_agents__agent_id__draft_get: {
     parameters: {
       query?: never
@@ -1744,6 +1971,43 @@ export interface operations {
       }
     }
   }
+  set_live_v1_agents__agent_id__live_put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        agent_id: string
+      }
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['LivePointer']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['VersionSummary']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
   validate_spec_v1_agents__agent_id__validate_post: {
     parameters: {
       query?: never
@@ -1768,6 +2032,144 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['Validation']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_versions_v1_agents__agent_id__versions_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        agent_id: string
+      }
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['VersionSummary'][]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  publish_v1_agents__agent_id__versions_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        agent_id: string
+      }
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['Publish']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['VersionSummary']
+        }
+      }
+      /** @description Unprocessable Entity */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['PublishRejected']
+        }
+      }
+    }
+  }
+  read_version_v1_agents__agent_id__versions__number__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        agent_id: string
+        number: number
+      }
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Version']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  restore_v1_agents__agent_id__versions__number__restore_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        agent_id: string
+        number: number
+      }
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Draft-Output']
         }
       }
       /** @description Validation Error */

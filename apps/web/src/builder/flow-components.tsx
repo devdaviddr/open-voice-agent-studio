@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { createContext, memo, useContext } from 'react'
 import {
   BaseEdge,
   EdgeLabelRenderer,
@@ -23,6 +23,9 @@ import { cn } from 'cn'
 import type { FlowEdge, FlowNode, NodeKind } from './convert'
 import { useShallow } from 'zustand/react/shallow'
 import { useBuilder } from './store'
+
+/** True inside read-only canvases (version view): hide the live draft's problems. */
+export const ReadOnlyCanvas = createContext(false)
 
 export const KINDS: Record<NodeKind, { name: string; icon: LucideIcon; tint: string; hint: string }> = {
   start: {
@@ -106,7 +109,8 @@ function summary(node: FlowNode): { title: string; body?: string; chips?: string
 export const FlowNodeView = memo(function FlowNodeView(props: NodeProps<FlowNode>) {
   const { id, type, selected } = props
   const node = props as unknown as FlowNode
-  const issues = useBuilder(useShallow((s) => s.issues.filter((i) => i.node_id === id)))
+  const readOnly = useContext(ReadOnlyCanvas)
+  const issues = useBuilder(useShallow((s) => (readOnly ? [] : s.issues.filter((i) => i.node_id === id))))
   const k = KINDS[type as NodeKind]
   const Icon = k.icon
   if (type === 'note') {
@@ -169,7 +173,8 @@ export const FlowNodeView = memo(function FlowNodeView(props: NodeProps<FlowNode
 export const ConditionEdge = memo(function ConditionEdge(props: EdgeProps<FlowEdge>) {
   const [path, x, y] = getSmoothStepPath({ ...props, borderRadius: 14 })
   const c = props.data?.condition
-  const hasIssue = useBuilder((s) => s.issues.some((i) => i.edge_id === props.id))
+  const readOnly = useContext(ReadOnlyCanvas)
+  const hasIssue = useBuilder((s) => !readOnly && s.issues.some((i) => i.edge_id === props.id))
   return (
     <>
       <BaseEdge
@@ -195,7 +200,7 @@ export const ConditionEdge = memo(function ConditionEdge(props: EdgeProps<FlowEd
               hasIssue && 'border-destructive text-destructive',
             )}
             style={{ transform: `translate(-50%, -50%) translate(${x}px, ${y}px)` }}
-            onClick={() => useBuilder.getState().select({ edges: [props.id] })}
+            onClick={() => !readOnly && useBuilder.getState().select({ edges: [props.id] })}
           >
             {props.data?.order ? (
               <span className="text-muted-foreground tabular-nums">{props.data.order}</span>

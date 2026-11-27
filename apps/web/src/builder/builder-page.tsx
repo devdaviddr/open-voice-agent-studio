@@ -32,6 +32,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { flowToSpec, type NodeKind } from './convert'
 import { edgeTypes, KINDS, nodeTypes } from './flow-components'
 import { Inspector } from './inspector'
+import { PublishButton, VersionsButton } from './versions'
 import { contentKey, isValidConnection, redo, undo, useBuilder } from './store'
 
 const PALETTE: NodeKind[] = ['agent_step', 'extract', 'router', 'end', 'note', 'start']
@@ -62,7 +63,7 @@ function Builder({ agentId }: { agentId: string }) {
   if (loadedFor !== agentId) return null
   return (
     <div className="bg-background flex h-svh flex-col">
-      <TopBar name={agent.name} liveVersion={agent.live_version} />
+      <TopBar agentId={agentId} name={agent.name} liveVersion={agent.live_version} />
       <div className="flex min-h-0 flex-1">
         <Palette />
         <main className="min-w-0 flex-1">
@@ -186,7 +187,15 @@ function Palette() {
   )
 }
 
-function TopBar({ name, liveVersion }: { name: string; liveVersion: number | null | undefined }) {
+function TopBar({
+  agentId,
+  name,
+  liveVersion,
+}: {
+  agentId: string
+  name: string
+  liveVersion: number | null | undefined
+}) {
   const revision = useBuilder((s) => s.revision)
   const issues = useBuilder((s) => s.issues)
   const canUndo = useStore(useBuilder.temporal, (s) => s.pastStates.length > 0)
@@ -247,6 +256,8 @@ function TopBar({ name, liveVersion }: { name: string; liveVersion: number | nul
             <Check className="size-3.5" /> Valid
           </span>
         )}
+        <VersionsButton agentId={agentId} />
+        <PublishButton agentId={agentId} />
       </div>
     </header>
   )
