@@ -17,3 +17,6 @@ target/
 .env.*
 !.env.example
 .DS_Store
+
+# Kokoro model files (fetched by tts/scripts/fetch-models.sh)
+tts/models/
