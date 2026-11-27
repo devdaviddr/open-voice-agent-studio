@@ -82,7 +82,7 @@ REST (all `/v1`, cookie auth, JSON):
 ```
 POST /auth/signup  POST /auth/login  POST /auth/logout  GET /me
 GET|PATCH /settings (open_signup)       GET|PUT /settings/llm   POST /settings/llm/test
-GET|POST /agents   POST /agents/from-template   GET|PATCH|DELETE /agents/{id}   POST /agents/{id}/duplicate
+GET|POST /agents {name, template: blank|receptionist}   GET|PATCH|DELETE /agents/{id}   POST /agents/{id}/duplicate
 GET /agents/{id}/draft   PUT /agents/{id}/draft {revision, spec} → 200 | 409
 POST /agents/{id}/validate   POST /agents/{id}/versions {message}   GET /agents/{id}/versions[/{n}]
 POST /agents/{id}/versions/{n}/restore   PUT /agents/{id}/live {version}

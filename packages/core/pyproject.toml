@@ -4,6 +4,7 @@ version = "0.2.0"
 description = "Shared domain models, validation and workflow engine for Open Voice Agent Studio"
 requires-python = ">=3.12"
 dependencies = [
+    "cel-python>=0.5.0",
     "pydantic>=2.12.0",
 ]
 

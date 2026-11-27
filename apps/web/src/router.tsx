@@ -6,10 +6,13 @@ import {
   Outlet,
   redirect,
 } from '@tanstack/react-router'
+import { agentQuery, agentsQuery, draftQuery } from '@/api/agents'
 import { meQuery } from '@/api/auth'
 import { AppShell } from '@/components/layout/app-shell'
 import { AuthPage } from './routes/auth-page'
-import { AgentsPage, PlaygroundPage, ServicesPage, SettingsPage } from './routes/pages'
+import { BuilderPage } from './builder/builder-page'
+import { AgentsPage } from './routes/agents-page'
+import { PlaygroundPage, ServicesPage, SettingsPage } from './routes/pages'
 
 type Ctx = { queryClient: QueryClient }
 
@@ -55,14 +58,31 @@ const signUpRoute = createRoute({
   component: () => <AuthPage mode="sign-up" />,
 })
 
-const appRoute = createRoute({
+/** Everything behind sign-in. */
+const authedRoute = createRoute({
   getParentRoute: () => rootRoute,
-  id: 'app',
+  id: 'authed',
   beforeLoad: async ({ context, location }) => {
     const me = await context.queryClient.ensureQueryData(meQuery)
     if (!me) throw redirect({ to: '/sign-in', search: { redirect: location.href } })
   },
-  component: AppShell,
+  component: Outlet,
+})
+
+/** Pages with the sidebar. The builder is full-screen and sits beside this layout. */
+const appRoute = createRoute({ getParentRoute: () => authedRoute, id: 'app', component: AppShell })
+
+const builderRoute = createRoute({
+  getParentRoute: () => authedRoute,
+  path: '/agents/$agentId',
+  loader: ({ context, params }) =>
+    Promise.all([
+      context.queryClient.ensureQueryData(agentQuery(params.agentId)),
+      context.queryClient.ensureQueryData(draftQuery(params.agentId)),
+    ]),
+  component: function Builder() {
+    return <BuilderPage agentId={builderRoute.useParams().agentId} />
+  },
 })
 
 const indexRoute = createRoute({
@@ -72,7 +92,12 @@ const indexRoute = createRoute({
     throw redirect({ to: '/agents' })
   },
 })
-const agentsRoute = createRoute({ getParentRoute: () => appRoute, path: '/agents', component: AgentsPage })
+const agentsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/agents',
+  loader: ({ context }) => context.queryClient.ensureQueryData(agentsQuery),
+  component: AgentsPage,
+})
 const playgroundRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/playground/tts',
@@ -92,7 +117,10 @@ const settingsRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   signInRoute,
   signUpRoute,
-  appRoute.addChildren([indexRoute, agentsRoute, playgroundRoute, servicesRoute, settingsRoute]),
+  authedRoute.addChildren([
+    appRoute.addChildren([indexRoute, agentsRoute, playgroundRoute, servicesRoute, settingsRoute]),
+    builderRoute,
+  ]),
 ])
 
 export function makeRouter(queryClient: QueryClient) {
