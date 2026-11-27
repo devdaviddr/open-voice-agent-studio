@@ -4,6 +4,13 @@ x-python: &python
     OVAS_DATABASE_URL: postgresql+asyncpg://ovas:ovas@db:5432/ovas
     OVAS_RUNTIME_URL: http://runtime:8100
     OVAS_TTS_URL: http://tts-kokoro:8002
+    OVAS_API_URL: http://api:8000
+    # Development-only keys. Set your own in .env for anything shared (see .env.example).
+    OVAS_SECRET_KEY: ${OVAS_SECRET_KEY:-dev-secret-key-change-me}
+    OVAS_INTERNAL_KEY: ${OVAS_INTERNAL_KEY:-dev-internal-key-change-me}
+    # Default LLM: Ollama on the host machine. Change per workspace in Settings.
+    OVAS_DEFAULT_LLM_URL: ${OVAS_DEFAULT_LLM_URL:-http://host.docker.internal:11434/v1}
+    OVAS_DEFAULT_LLM_MODEL: ${OVAS_DEFAULT_LLM_MODEL:-qwen3.5:9b}
 
 services:
   web:
@@ -11,6 +18,7 @@ services:
     ports: ["5173:5173"]
     environment:
       OVAS_API_URL: http://api:8000
+      OVAS_RUNTIME_URL: http://runtime:8100
       VITE_POLL: "1"
     volumes:  # live reload of the studio source in development
       - ./apps/web/src:/app/apps/web/src
@@ -21,6 +29,7 @@ services:
     <<: *python
     build: { context: ., dockerfile: services/api/Dockerfile }
     ports: ["8000:8000"]
+    extra_hosts: ["host.docker.internal:host-gateway"]
     depends_on:
       db: { condition: service_healthy }
 
@@ -28,6 +37,7 @@ services:
     <<: *python
     build: { context: ., dockerfile: services/runtime/Dockerfile }
     ports: ["8100:8100"]
+    extra_hosts: ["host.docker.internal:host-gateway"]
 
   tts-kokoro:
     build: { context: ., dockerfile: providers/tts-kokoro/Dockerfile }

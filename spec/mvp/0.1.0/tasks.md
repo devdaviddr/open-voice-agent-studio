@@ -32,11 +32,11 @@ updated: 2026-11-27
 | T-10 | Builder state: Zustand + zundo undo/redo, shortcuts, copy/paste, autosave with conflict dialog, validation overlay | FR-7, FR-8, FR-10 | T-9, T-8 | AC-6, AC-7, AC-9 | 3 | [x] |
 | T-11 | Versions: publish, list, read-only view, restore, live pointer; immutability trigger | FR-11 | T-7 | AC-10 | 4 Versions | [x] |
 | T-12 | Structural diff in `ovas-core` + `/diff` + diff view in the versions panel | FR-12 | T-11 | AC-11 | 4 | [x] |
-| T-13 | Settings: LLM provider (encrypted key, test connection); `OVAS_SECRET_KEY` handling | FR-21 | T-5 | AC-19 | 5 Engine | [ ] |
-| T-14 | Engine in `ovas-core`: node execution, variable templating, Extract with typed validation, edge evaluation (CEL → batched LLM → else), history budget + summary | FR-13, FR-14, FR-9 | T-3, T-8 | AC-8, AC-12, AC-13 | 5 | [ ] |
-| T-15 | Runtime: session token, WebSocket stream protocol, event persistence via internal API; `POST /sessions`, sessions list/detail API | FR-17, FR-20 | T-14, T-13 | AC-16, AC-18 | 5 | [ ] |
-| T-16 | Console UI: slide-out panel, streaming chat, event timeline, active-node highlight, test end-user ID, read-aloud via `/tts` | FR-17, FR-18, FR-19 | T-15, T-10 | AC-16, AC-17 | 5 | [ ] |
-| T-17 | Sessions page: list + transcript/events view | FR-20 | T-15 | AC-18 | 5 | [ ] |
+| T-13 | Settings: LLM provider (encrypted key, test connection); `OVAS_SECRET_KEY` handling | FR-21 | T-5 | AC-19 | 5 Engine | [x] |
+| T-14 | Engine in `ovas-core`: node execution, variable templating, Extract with typed validation, edge evaluation (CEL → batched LLM → else), history budget + summary | FR-13, FR-14, FR-9 | T-3, T-8 | AC-8, AC-12, AC-13 | 5 | [x] |
+| T-15 | Runtime: session token, WebSocket stream protocol, event persistence via internal API; `POST /sessions`, sessions list/detail API | FR-17, FR-20 | T-14, T-13 | AC-16, AC-18 | 5 | [x] |
+| T-16 | Console UI: slide-out panel, streaming chat, event timeline, active-node highlight, test end-user ID, read-aloud via `/tts` | FR-17, FR-18, FR-19 | T-15, T-10 | AC-16, AC-17 | 5 | [x] |
+| T-17 | Sessions page: list + transcript/events view | FR-20 | T-15 | AC-18 | 5 | [x] |
 | T-18 | Jobs table + in-process worker; knowledge upload, parse (md/txt/pdf), chunk, embed (fastembed), status | FR-15 | T-2 | AC-14 | 6 Knowledge | [ ] |
 | T-19 | `search_knowledge` tool + auto top-k in engine; knowledge page + attach/narrow in builder | FR-15 | T-18, T-14, T-9 | AC-14 | 6 | [ ] |
 | T-20 | Memory: extraction job on session end, recall at start, `recall_memory` tool, memories UI with delete | FR-16 | T-18, T-15 | AC-15 | 7 Memory | [ ] |
