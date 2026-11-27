@@ -44,13 +44,13 @@ describe('auth routing', () => {
 
   it('shows the app shell to signed-in users', async () => {
     renderAt('/agents', me)
-    expect(await screen.findByRole('heading', { name: 'Agents', exact: true })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /^Agents$/ })).toBeInTheDocument()
     expect(screen.getByText('Ana')).toBeInTheDocument()
   })
 
   it('redirects signed-in users away from sign-in', async () => {
     const router = renderAt('/sign-in', me)
-    expect(await screen.findByRole('heading', { name: 'Agents', exact: true })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /^Agents$/ })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/agents')
   })
 })
