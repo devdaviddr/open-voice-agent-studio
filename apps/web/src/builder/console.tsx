@@ -5,6 +5,7 @@ import { CircleStop, Loader2, Mic, Play, RotateCcw, Send, Square, Volume2, Volum
 import { cn } from 'cn'
 import { NotRunnableError, startSession, type SessionTarget } from '@/api/sessions'
 import { SttError, transcribe as speechToText } from '@/api/stt'
+import { synthesize } from '@/api/tts'
 import { versionsQuery } from '@/api/versions'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -107,25 +108,34 @@ export function TestConsole({ agentId, onClose }: { agentId: string; onClose: ()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   function speak(text: string, voice: Voice) {
+    // Each step catches its own failure: a rejected or stuck promise would silence the queue.
     audio.current.queue = audio.current.queue.then(async () => {
       if (!readAloudRef.current) return
-      const res = await fetch('/api/v1/tts', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ text, voice: voice.voice_id, speed: voice.speed }),
-      })
-      if (!res.ok) return
-      const url = URL.createObjectURL(await res.blob())
-      const el = new Audio(url)
-      audio.current.current = el
-      track({ type: 'local:audio', playing: true })
-      await el.play().catch(() => {})
-      await new Promise<void>((done) => {
-        el.onended = () => done()
-        el.onpause = () => done()
-      })
-      track({ type: 'local:audio', playing: false })
-      URL.revokeObjectURL(url)
+      let url = ''
+      try {
+        url = URL.createObjectURL(await synthesize(text, voice))
+        const el = new Audio(url)
+        audio.current.current = el
+        const ended = new Promise<void>((done) => {
+          el.onended = () => done()
+          el.onpause = () => done()
+          el.onerror = () => done()
+        })
+        track({ type: 'local:audio', playing: true })
+        // A blocked autoplay rejects play() and never fires `ended`: skip instead of waiting.
+        if (
+          await el.play().then(
+            () => true,
+            () => false,
+          )
+        )
+          await ended
+      } catch {
+        // TTS unreachable: the reply is still shown as text.
+      } finally {
+        track({ type: 'local:audio', playing: false })
+        if (url) URL.revokeObjectURL(url)
+      }
     })
   }
 
