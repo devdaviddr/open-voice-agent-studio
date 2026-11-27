@@ -11,8 +11,18 @@ services:
     ports: ["8000:8000"]
     environment:
       AUDIO_URL: http://audio:8001
-    depends_on: [audio]
+      TTS_URL: http://tts:8002
+    depends_on: [audio, tts]
 
   audio:
     build: ./audio
     ports: ["8001:8001"]
+
+  tts:
+    build: ./tts
+    ports: ["8002:8002"]
+    volumes:
+      - kokoro-models:/models
+
+volumes:
+  kokoro-models:
