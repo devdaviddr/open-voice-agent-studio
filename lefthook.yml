@@ -1,0 +1,17 @@
+# Git hooks. Installed by `pnpm install` (lefthook postinstall) or `pnpm exec lefthook install`.
+pre-commit:
+  parallel: true
+  commands:
+    ruff:
+      glob: "*.py"
+      run: uv run ruff format {staged_files} && uv run ruff check --fix {staged_files}
+      stage_fixed: true
+    prettier:
+      glob: "apps/**/*.{ts,tsx,css,json}"
+      exclude: "apps/web/src/gen/**"
+      run: pnpm exec prettier --config .prettierrc.json --write {staged_files}
+      stage_fixed: true
+pre-push:
+  commands:
+    check:
+      run: make check
