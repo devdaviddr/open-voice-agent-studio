@@ -1,0 +1,1133 @@
+{
+  "$defs": {
+    "AgentSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "first_message": {
+          "default": "",
+          "type": "string"
+        },
+        "history_token_budget": {
+          "default": 4000,
+          "minimum": 500,
+          "type": "integer"
+        },
+        "language": {
+          "default": "en",
+          "type": "string"
+        },
+        "limits": {
+          "$ref": "#/$defs/Limits"
+        },
+        "llm": {
+          "$ref": "#/$defs/LlmSettings"
+        },
+        "prompt": {
+          "default": "",
+          "type": "string"
+        },
+        "stt": {
+          "$ref": "#/$defs/SttSettings"
+        },
+        "turn": {
+          "$ref": "#/$defs/TurnSettings"
+        },
+        "voice": {
+          "$ref": "#/$defs/VoiceSettings"
+        }
+      },
+      "required": [
+        "prompt",
+        "first_message",
+        "language",
+        "voice",
+        "llm",
+        "stt",
+        "turn",
+        "limits",
+        "history_token_budget"
+      ],
+      "title": "AgentSettings",
+      "type": "object"
+    },
+    "AgentStepData": {
+      "additionalProperties": false,
+      "properties": {
+        "auto_knowledge_top_k": {
+          "default": 0,
+          "maximum": 10,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "knowledge": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/KnowledgeRef"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Narrow knowledge; null = all"
+        },
+        "label": {
+          "type": "string"
+        },
+        "overrides": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SettingsOverride"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "prompt": {
+          "default": "",
+          "type": "string"
+        },
+        "tools": {
+          "anyOf": [
+            {
+              "items": {
+                "discriminator": {
+                  "mapping": {
+                    "builtin": "#/$defs/BuiltinToolRef",
+                    "workspace": "#/$defs/WorkspaceToolRef"
+                  },
+                  "propertyName": "kind"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/BuiltinToolRef"
+                  },
+                  {
+                    "$ref": "#/$defs/WorkspaceToolRef"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Narrow the agent's tools; null = all"
+        }
+      },
+      "required": [
+        "label",
+        "prompt",
+        "overrides",
+        "tools",
+        "knowledge",
+        "auto_knowledge_top_k"
+      ],
+      "title": "AgentStepData",
+      "type": "object"
+    },
+    "AgentStepNode": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/AgentStepData"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "position": {
+          "$ref": "#/$defs/Position"
+        },
+        "type": {
+          "const": "agent_step",
+          "default": "agent_step",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "position",
+        "type",
+        "data"
+      ],
+      "title": "AgentStepNode",
+      "type": "object"
+    },
+    "BuiltinToolRef": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "builtin",
+          "default": "builtin",
+          "type": "string"
+        },
+        "name": {
+          "enum": [
+            "end_session",
+            "go_to_node",
+            "set_variable",
+            "search_knowledge",
+            "recall_memory"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "name"
+      ],
+      "title": "BuiltinToolRef",
+      "type": "object"
+    },
+    "CelCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "expr": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "kind": {
+          "const": "cel",
+          "default": "cel",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "expr"
+      ],
+      "title": "CelCondition",
+      "type": "object"
+    },
+    "Edge": {
+      "additionalProperties": false,
+      "properties": {
+        "condition": {
+          "anyOf": [
+            {
+              "discriminator": {
+                "mapping": {
+                  "cel": "#/$defs/CelCondition",
+                  "else": "#/$defs/ElseCondition",
+                  "llm": "#/$defs/LlmCondition"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/LlmCondition"
+                },
+                {
+                  "$ref": "#/$defs/CelCondition"
+                },
+                {
+                  "$ref": "#/$defs/ElseCondition"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "null = always (unconditional)"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "order": {
+          "default": 0,
+          "type": "integer"
+        },
+        "source": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "source",
+        "target",
+        "order",
+        "condition"
+      ],
+      "title": "Edge",
+      "type": "object"
+    },
+    "ElseCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "else",
+          "default": "else",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "ElseCondition",
+      "type": "object"
+    },
+    "EndData": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "default": "End",
+          "type": "string"
+        },
+        "message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "outcome": {
+          "default": "completed",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "message",
+        "outcome"
+      ],
+      "title": "EndData",
+      "type": "object"
+    },
+    "EndNode": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/EndData"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "position": {
+          "$ref": "#/$defs/Position"
+        },
+        "type": {
+          "const": "end",
+          "default": "end",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "position",
+        "type",
+        "data"
+      ],
+      "title": "EndNode",
+      "type": "object"
+    },
+    "ExtractData": {
+      "additionalProperties": false,
+      "properties": {
+        "instructions": {
+          "default": "",
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "outputs": {
+          "description": "Names of declared variables to fill",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "label",
+        "instructions",
+        "outputs"
+      ],
+      "title": "ExtractData",
+      "type": "object"
+    },
+    "ExtractNode": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/ExtractData"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "position": {
+          "$ref": "#/$defs/Position"
+        },
+        "type": {
+          "const": "extract",
+          "default": "extract",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "position",
+        "type",
+        "data"
+      ],
+      "title": "ExtractNode",
+      "type": "object"
+    },
+    "Graph": {
+      "additionalProperties": false,
+      "properties": {
+        "edges": {
+          "items": {
+            "$ref": "#/$defs/Edge"
+          },
+          "type": "array"
+        },
+        "nodes": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "agent_step": "#/$defs/AgentStepNode",
+                "end": "#/$defs/EndNode",
+                "extract": "#/$defs/ExtractNode",
+                "handoff": "#/$defs/HandoffNode",
+                "note": "#/$defs/NoteNode",
+                "router": "#/$defs/RouterNode",
+                "start": "#/$defs/StartNode",
+                "tool_call": "#/$defs/ToolCallNode"
+              },
+              "propertyName": "type"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/StartNode"
+              },
+              {
+                "$ref": "#/$defs/AgentStepNode"
+              },
+              {
+                "$ref": "#/$defs/ExtractNode"
+              },
+              {
+                "$ref": "#/$defs/RouterNode"
+              },
+              {
+                "$ref": "#/$defs/ToolCallNode"
+              },
+              {
+                "$ref": "#/$defs/HandoffNode"
+              },
+              {
+                "$ref": "#/$defs/EndNode"
+              },
+              {
+                "$ref": "#/$defs/NoteNode"
+              }
+            ]
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "nodes",
+        "edges"
+      ],
+      "title": "Graph",
+      "type": "object"
+    },
+    "HandoffData": {
+      "additionalProperties": false,
+      "properties": {
+        "agent_id": {
+          "type": "string"
+        },
+        "environment": {
+          "default": "live",
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "pass_variables": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "label",
+        "agent_id",
+        "environment",
+        "pass_variables"
+      ],
+      "title": "HandoffData",
+      "type": "object"
+    },
+    "HandoffNode": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/HandoffData"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "position": {
+          "$ref": "#/$defs/Position"
+        },
+        "type": {
+          "const": "handoff",
+          "default": "handoff",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "position",
+        "type",
+        "data"
+      ],
+      "title": "HandoffNode",
+      "type": "object"
+    },
+    "KnowledgeRef": {
+      "additionalProperties": false,
+      "properties": {
+        "source_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id"
+      ],
+      "title": "KnowledgeRef",
+      "type": "object"
+    },
+    "Limits": {
+      "additionalProperties": false,
+      "properties": {
+        "idle_timeout_seconds": {
+          "default": 30,
+          "minimum": 5,
+          "type": "integer"
+        },
+        "max_session_seconds": {
+          "default": 900,
+          "minimum": 10,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "max_session_seconds",
+        "idle_timeout_seconds"
+      ],
+      "title": "Limits",
+      "type": "object"
+    },
+    "LlmCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "llm",
+          "default": "llm",
+          "type": "string"
+        },
+        "text": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "text"
+      ],
+      "title": "LlmCondition",
+      "type": "object"
+    },
+    "LlmSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "provider": {
+          "default": "workspace",
+          "type": "string"
+        },
+        "temperature": {
+          "default": 0.6,
+          "maximum": 2.0,
+          "minimum": 0.0,
+          "type": "number"
+        }
+      },
+      "required": [
+        "provider",
+        "model",
+        "temperature"
+      ],
+      "title": "LlmSettings",
+      "type": "object"
+    },
+    "MemorySettings": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
+      "title": "MemorySettings",
+      "type": "object"
+    },
+    "NoteData": {
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "NoteData",
+      "type": "object"
+    },
+    "NoteNode": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/NoteData"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "position": {
+          "$ref": "#/$defs/Position"
+        },
+        "type": {
+          "const": "note",
+          "default": "note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "position",
+        "type",
+        "data"
+      ],
+      "title": "NoteNode",
+      "type": "object"
+    },
+    "Position": {
+      "additionalProperties": false,
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "title": "Position",
+      "type": "object"
+    },
+    "PronunciationEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "say": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "term": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "term",
+        "say"
+      ],
+      "title": "PronunciationEntry",
+      "type": "object"
+    },
+    "RecordingSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
+      "title": "RecordingSettings",
+      "type": "object"
+    },
+    "RouterData": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "label"
+      ],
+      "title": "RouterData",
+      "type": "object"
+    },
+    "RouterNode": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/RouterData"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "position": {
+          "$ref": "#/$defs/Position"
+        },
+        "type": {
+          "const": "router",
+          "default": "router",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "position",
+        "type",
+        "data"
+      ],
+      "title": "RouterNode",
+      "type": "object"
+    },
+    "SettingsOverride": {
+      "additionalProperties": false,
+      "description": "Per-node overrides; unset fields inherit the agent's settings.",
+      "properties": {
+        "language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "llm": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LlmSettings"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "voice": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VoiceSettings"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "language",
+        "voice",
+        "llm"
+      ],
+      "title": "SettingsOverride",
+      "type": "object"
+    },
+    "StartData": {
+      "additionalProperties": false,
+      "properties": {
+        "first_message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "set": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Variable name \u2192 CEL expression",
+          "type": "object"
+        }
+      },
+      "required": [
+        "first_message",
+        "set"
+      ],
+      "title": "StartData",
+      "type": "object"
+    },
+    "StartNode": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/StartData"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "position": {
+          "$ref": "#/$defs/Position"
+        },
+        "type": {
+          "const": "start",
+          "default": "start",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "position",
+        "type",
+        "data"
+      ],
+      "title": "StartNode",
+      "type": "object"
+    },
+    "SttSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "model": {
+          "default": "small.en",
+          "type": "string"
+        },
+        "provider": {
+          "default": "whisper",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider",
+        "model"
+      ],
+      "title": "SttSettings",
+      "type": "object"
+    },
+    "ToolCallData": {
+      "additionalProperties": false,
+      "properties": {
+        "args": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Argument \u2192 CEL expression",
+          "type": "object"
+        },
+        "label": {
+          "type": "string"
+        },
+        "result_map": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Variable \u2192 JSONPath",
+          "type": "object"
+        },
+        "tool": {
+          "discriminator": {
+            "mapping": {
+              "builtin": "#/$defs/BuiltinToolRef",
+              "workspace": "#/$defs/WorkspaceToolRef"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/BuiltinToolRef"
+            },
+            {
+              "$ref": "#/$defs/WorkspaceToolRef"
+            }
+          ]
+        }
+      },
+      "required": [
+        "label",
+        "tool",
+        "args",
+        "result_map"
+      ],
+      "title": "ToolCallData",
+      "type": "object"
+    },
+    "ToolCallNode": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "$ref": "#/$defs/ToolCallData"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "position": {
+          "$ref": "#/$defs/Position"
+        },
+        "type": {
+          "const": "tool_call",
+          "default": "tool_call",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "position",
+        "type",
+        "data"
+      ],
+      "title": "ToolCallNode",
+      "type": "object"
+    },
+    "TurnSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "interruptions": {
+          "default": true,
+          "type": "boolean"
+        },
+        "sensitivity": {
+          "default": "medium",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "sensitivity",
+        "interruptions"
+      ],
+      "title": "TurnSettings",
+      "type": "object"
+    },
+    "VariableDef": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "default": "",
+          "type": "string"
+        },
+        "enum": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "name": {
+          "pattern": "^[a-z_][a-z0-9_]*(\\.[a-z_][a-z0-9_]*)*$",
+          "type": "string"
+        },
+        "type": {
+          "default": "string",
+          "enum": [
+            "string",
+            "number",
+            "boolean",
+            "date",
+            "email",
+            "enum",
+            "object"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "type",
+        "enum",
+        "description"
+      ],
+      "title": "VariableDef",
+      "type": "object"
+    },
+    "VoiceSettings": {
+      "additionalProperties": false,
+      "properties": {
+        "provider": {
+          "default": "kokoro",
+          "type": "string"
+        },
+        "speed": {
+          "default": 1.0,
+          "maximum": 2.0,
+          "minimum": 0.5,
+          "type": "number"
+        },
+        "voice_id": {
+          "default": "af_heart",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider",
+        "voice_id",
+        "speed"
+      ],
+      "title": "VoiceSettings",
+      "type": "object"
+    },
+    "WorkspaceToolRef": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "workspace",
+          "default": "workspace",
+          "type": "string"
+        },
+        "tool_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "tool_id"
+      ],
+      "title": "WorkspaceToolRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "graph": {
+      "$ref": "#/$defs/Graph"
+    },
+    "knowledge": {
+      "items": {
+        "$ref": "#/$defs/KnowledgeRef"
+      },
+      "type": "array"
+    },
+    "memory": {
+      "$ref": "#/$defs/MemorySettings"
+    },
+    "pronunciation": {
+      "items": {
+        "$ref": "#/$defs/PronunciationEntry"
+      },
+      "type": "array"
+    },
+    "recording": {
+      "$ref": "#/$defs/RecordingSettings"
+    },
+    "schema_version": {
+      "const": "1",
+      "default": "1",
+      "type": "string"
+    },
+    "settings": {
+      "$ref": "#/$defs/AgentSettings"
+    },
+    "tools": {
+      "items": {
+        "discriminator": {
+          "mapping": {
+            "builtin": "#/$defs/BuiltinToolRef",
+            "workspace": "#/$defs/WorkspaceToolRef"
+          },
+          "propertyName": "kind"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/$defs/BuiltinToolRef"
+          },
+          {
+            "$ref": "#/$defs/WorkspaceToolRef"
+          }
+        ]
+      },
+      "type": "array"
+    },
+    "variables": {
+      "items": {
+        "$ref": "#/$defs/VariableDef"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "settings",
+    "graph",
+    "tools",
+    "knowledge",
+    "variables",
+    "pronunciation",
+    "memory",
+    "recording"
+  ],
+  "title": "AgentSpec",
+  "type": "object"
+}

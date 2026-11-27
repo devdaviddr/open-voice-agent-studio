@@ -1,0 +1,11 @@
+**/node_modules
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/dist
+**/target
+providers/tts-kokoro/models
+.git
+spec
+docs

@@ -20,10 +20,10 @@ updated: 2026-11-27
 
 | # | Task | Serves | Depends on | Verify by | Slice | Done |
 | --- | --- | --- | --- | --- | --- | --- |
-| T-1 | Restructure into the monorepo (M0 T-1–T-3): apps/web, services/api, services/runtime, packages/core, providers/tts-kokoro; drop Rust; uv + pnpm workspaces; Makefile | FR-22 | — | AC-20 | 1 Foundation | [ ] |
-| T-2 | Postgres + pgvector in compose; SQLAlchemy async; Alembic baseline; api `/health` aggregates | FR-22 | T-1 | AC-20 | 1 | [ ] |
-| T-3 | `ovas-core` AgentSpec models (full product schema), JSON Schema → TS codegen, `gen-check` | FR-22, FR-6 | T-1 | AC-20 | 1 | [ ] |
-| T-4 | CI workflow, lefthook, root + package CLAUDE.md, AGENTS.md, `.claude/rules`, format-on-edit + guard hooks with tests | FR-22 | T-1 | AC-20 | 1 | [ ] |
+| T-1 | Restructure into the monorepo (M0 T-1–T-3): apps/web, services/api, services/runtime, packages/core, providers/tts-kokoro; drop Rust; uv + pnpm workspaces; Makefile | FR-22 | — | AC-20 | 1 Foundation | [x] |
+| T-2 | Postgres + pgvector in compose; SQLAlchemy async; Alembic baseline; api `/health` aggregates | FR-22 | T-1 | AC-20 | 1 | [x] |
+| T-3 | `ovas-core` AgentSpec models (full product schema), JSON Schema → TS codegen, `gen-check` | FR-22, FR-6 | T-1 | AC-20 | 1 | [x] |
+| T-4 | CI workflow, lefthook, root + package CLAUDE.md, AGENTS.md, `.claude/rules`, format-on-edit + guard hooks with tests | FR-22 | T-1 | AC-20 | 1 | [x] |
 | T-5 | Auth: users, workspaces, memberships, sessions, argon2id, sign-up/in/out, open sign-up setting, rate limit, Origin/content-type guard | FR-1, FR-2, FR-3 | T-2 | AC-1, AC-2, AC-3 | 2 Auth | [ ] |
 | T-6 | Web: TanStack Router + Query, generated OpenAPI client, sign-in/sign-up pages, auth guard, app shell (sidebar, theme) | FR-1 | T-5, T-3 | AC-1 (e2e) | 2 | [ ] |
 | T-7 | Agents API: CRUD, duplicate, from-template (receptionist), draft GET/PUT with revision + 409 | FR-4, FR-7 | T-5 | AC-4, AC-6 | 3 Builder | [ ] |

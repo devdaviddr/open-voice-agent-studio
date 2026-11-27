@@ -8,9 +8,8 @@ dist/
 __pycache__/
 .pytest_cache/
 .ruff_cache/
-
-# Rust
-target/
+.coverage
+htmlcov/
 
 # Env and OS
 .env
@@ -18,5 +17,5 @@ target/
 !.env.example
 .DS_Store
 
-# Kokoro model files (fetched by tts/scripts/fetch-models.sh)
-tts/models/
+# Kokoro model files (fetched by providers/tts-kokoro/scripts/fetch-models.sh)
+providers/tts-kokoro/models/

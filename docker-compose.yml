@@ -1,28 +1,66 @@
+# Open Voice Agent Studio — development stack. `make up` (or `docker compose up --build`).
+x-python: &python
+  environment: &pyenv
+    OVAS_DATABASE_URL: postgresql+asyncpg://ovas:ovas@db:5432/ovas
+    OVAS_RUNTIME_URL: http://runtime:8100
+    OVAS_TTS_URL: http://tts-kokoro:8002
+
 services:
-  frontend:
-    build: ./frontend
+  web:
+    build: { context: ., dockerfile: apps/web/Dockerfile }
     ports: ["5173:5173"]
     environment:
-      AGENT_URL: http://agent:8000
-    depends_on: [agent]
+      OVAS_API_URL: http://api:8000
+    depends_on: [api]
 
-  agent:
-    build: ./agent
+  api:
+    <<: *python
+    build: { context: ., dockerfile: services/api/Dockerfile }
     ports: ["8000:8000"]
-    environment:
-      AUDIO_URL: http://audio:8001
-      TTS_URL: http://tts:8002
-    depends_on: [audio, tts]
+    depends_on:
+      db: { condition: service_healthy }
 
-  audio:
-    build: ./audio
-    ports: ["8001:8001"]
+  runtime:
+    <<: *python
+    build: { context: ., dockerfile: services/runtime/Dockerfile }
+    ports: ["8100:8100"]
 
-  tts:
-    build: ./tts
+  tts-kokoro:
+    build: { context: ., dockerfile: providers/tts-kokoro/Dockerfile }
     ports: ["8002:8002"]
     volumes:
       - kokoro-models:/models
 
+  db:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: ovas
+      POSTGRES_PASSWORD: ovas
+      POSTGRES_DB: ovas
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ovas"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # Throwaway database for `make test`; data lives in memory.
+  db-test:
+    image: pgvector/pgvector:pg17
+    profiles: [test]
+    environment:
+      POSTGRES_USER: ovas
+      POSTGRES_PASSWORD: ovas
+      POSTGRES_DB: ovas_test
+    ports: ["127.0.0.1:55432:5432"]
+    tmpfs: [/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ovas"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
 volumes:
+  pgdata:
   kokoro-models:

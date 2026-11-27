@@ -1,0 +1,20 @@
+{
+  "name": "open-voice-agent-studio",
+  "private": true,
+  "packageManager": "pnpm@11.5.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @ovas/web dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test"
+  },
+  "devDependencies": {
+    "json-schema-to-typescript": "^16.0.0",
+    "lefthook": "^2.2.3",
+    "prettier": "^3.10.1"
+  }
+}
