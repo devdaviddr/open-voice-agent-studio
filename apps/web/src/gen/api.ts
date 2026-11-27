@@ -22,6 +22,98 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/v1/agents': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Agents */
+    get: operations['list_agents_v1_agents_get']
+    put?: never
+    /** Create Agent */
+    post: operations['create_agent_v1_agents_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/agents/{agent_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Read Agent */
+    get: operations['read_agent_v1_agents__agent_id__get']
+    put?: never
+    post?: never
+    /** Delete Agent */
+    delete: operations['delete_agent_v1_agents__agent_id__delete']
+    options?: never
+    head?: never
+    /** Patch Agent */
+    patch: operations['patch_agent_v1_agents__agent_id__patch']
+    trace?: never
+  }
+  '/v1/agents/{agent_id}/draft': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Read Draft */
+    get: operations['read_draft_v1_agents__agent_id__draft_get']
+    /**
+     * Save Draft
+     * @description Save the draft if `revision` is still current; otherwise 409 with the current revision.
+     */
+    put: operations['save_draft_v1_agents__agent_id__draft_put']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/agents/{agent_id}/duplicate': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Duplicate Agent */
+    post: operations['duplicate_agent_v1_agents__agent_id__duplicate_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/agents/{agent_id}/validate': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Validate Spec */
+    post: operations['validate_spec_v1_agents__agent_id__validate_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/v1/auth/login': {
     parameters: {
       query?: never
@@ -146,10 +238,661 @@ export interface paths {
 export type webhooks = Record<string, never>
 export interface components {
   schemas: {
+    /** AgentCreate */
+    AgentCreate: {
+      /**
+       * Description
+       * @default
+       */
+      description: string
+      /** Name */
+      name: string
+      /**
+       * Template
+       * @default blank
+       * @enum {string}
+       */
+      template: 'blank' | 'receptionist'
+    }
+    /** AgentPatch */
+    AgentPatch: {
+      /** Description */
+      description?: string | null
+      /** Name */
+      name?: string | null
+    }
+    /** AgentSettings */
+    'AgentSettings-Input': {
+      /**
+       * First Message
+       * @default
+       */
+      first_message: string
+      /**
+       * History Token Budget
+       * @default 4000
+       */
+      history_token_budget: number
+      /**
+       * Language
+       * @default en
+       */
+      language: string
+      limits?: components['schemas']['Limits-Input']
+      llm?: components['schemas']['LlmSettings-Input']
+      /**
+       * Prompt
+       * @default
+       */
+      prompt: string
+      stt?: components['schemas']['SttSettings-Input']
+      turn?: components['schemas']['TurnSettings-Input']
+      voice?: components['schemas']['VoiceSettings-Input']
+    }
+    /** AgentSettings */
+    'AgentSettings-Output': {
+      /**
+       * First Message
+       * @default
+       */
+      first_message: string
+      /**
+       * History Token Budget
+       * @default 4000
+       */
+      history_token_budget: number
+      /**
+       * Language
+       * @default en
+       */
+      language: string
+      limits: components['schemas']['Limits-Output']
+      llm: components['schemas']['LlmSettings-Output']
+      /**
+       * Prompt
+       * @default
+       */
+      prompt: string
+      stt: components['schemas']['SttSettings-Output']
+      turn: components['schemas']['TurnSettings-Output']
+      voice: components['schemas']['VoiceSettings-Output']
+    }
+    /** AgentSpec */
+    'AgentSpec-Input': {
+      graph?: components['schemas']['Graph-Input']
+      /** Knowledge */
+      knowledge?: components['schemas']['KnowledgeRef'][]
+      memory?: components['schemas']['MemorySettings-Input']
+      /** Pronunciation */
+      pronunciation?: components['schemas']['PronunciationEntry'][]
+      recording?: components['schemas']['RecordingSettings-Input']
+      /**
+       * Schema Version
+       * @default 1
+       * @constant
+       */
+      schema_version: '1'
+      settings?: components['schemas']['AgentSettings-Input']
+      /** Tools */
+      tools?: (
+        components['schemas']['BuiltinToolRef-Input'] | components['schemas']['WorkspaceToolRef-Input']
+      )[]
+      /** Variables */
+      variables?: components['schemas']['VariableDef-Input'][]
+    }
+    /** AgentSpec */
+    'AgentSpec-Output': {
+      graph: components['schemas']['Graph-Output']
+      /** Knowledge */
+      knowledge: components['schemas']['KnowledgeRef'][]
+      memory: components['schemas']['MemorySettings-Output']
+      /** Pronunciation */
+      pronunciation: components['schemas']['PronunciationEntry'][]
+      recording: components['schemas']['RecordingSettings-Output']
+      /**
+       * Schema Version
+       * @default 1
+       * @constant
+       */
+      schema_version: '1'
+      settings: components['schemas']['AgentSettings-Output']
+      /** Tools */
+      tools: (
+        components['schemas']['BuiltinToolRef-Output'] | components['schemas']['WorkspaceToolRef-Output']
+      )[]
+      /** Variables */
+      variables: components['schemas']['VariableDef-Output'][]
+    }
+    /** AgentStepData */
+    'AgentStepData-Input': {
+      /**
+       * Auto Knowledge Top K
+       * @default 0
+       */
+      auto_knowledge_top_k: number
+      /**
+       * Knowledge
+       * @description Narrow knowledge; null = all
+       */
+      knowledge?: components['schemas']['KnowledgeRef'][] | null
+      /** Label */
+      label: string
+      overrides?: components['schemas']['SettingsOverride-Input'] | null
+      /**
+       * Prompt
+       * @default
+       */
+      prompt: string
+      /**
+       * Tools
+       * @description Narrow the agent's tools; null = all
+       */
+      tools?:
+        | (components['schemas']['BuiltinToolRef-Input'] | components['schemas']['WorkspaceToolRef-Input'])[]
+        | null
+    }
+    /** AgentStepData */
+    'AgentStepData-Output': {
+      /**
+       * Auto Knowledge Top K
+       * @default 0
+       */
+      auto_knowledge_top_k: number
+      /**
+       * Knowledge
+       * @description Narrow knowledge; null = all
+       */
+      knowledge: components['schemas']['KnowledgeRef'][] | null
+      /** Label */
+      label: string
+      overrides: components['schemas']['SettingsOverride-Output'] | null
+      /**
+       * Prompt
+       * @default
+       */
+      prompt: string
+      /**
+       * Tools
+       * @description Narrow the agent's tools; null = all
+       */
+      tools:
+        | (
+            components['schemas']['BuiltinToolRef-Output'] | components['schemas']['WorkspaceToolRef-Output']
+          )[]
+        | null
+    }
+    /** AgentStepNode */
+    'AgentStepNode-Input': {
+      data: components['schemas']['AgentStepData-Input']
+      /** Id */
+      id: string
+      position: components['schemas']['Position']
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'agent_step'
+    }
+    /** AgentStepNode */
+    'AgentStepNode-Output': {
+      data: components['schemas']['AgentStepData-Output']
+      /** Id */
+      id: string
+      position: components['schemas']['Position']
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'agent_step'
+    }
+    /** AgentSummary */
+    AgentSummary: {
+      /** Description */
+      description: string
+      /** Draft Revision */
+      draft_revision: number
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+      /** Live Version */
+      live_version: number | null
+      /** Name */
+      name: string
+      /** Node Count */
+      node_count: number
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string
+    }
+    /** BuiltinToolRef */
+    'BuiltinToolRef-Input': {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: 'builtin'
+      /**
+       * Name
+       * @enum {string}
+       */
+      name: 'end_session' | 'go_to_node' | 'set_variable' | 'search_knowledge' | 'recall_memory'
+    }
+    /** BuiltinToolRef */
+    'BuiltinToolRef-Output': {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: 'builtin'
+      /**
+       * Name
+       * @enum {string}
+       */
+      name: 'end_session' | 'go_to_node' | 'set_variable' | 'search_knowledge' | 'recall_memory'
+    }
+    /** CelCondition */
+    'CelCondition-Input': {
+      /** Expr */
+      expr: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: 'cel'
+    }
+    /** CelCondition */
+    'CelCondition-Output': {
+      /** Expr */
+      expr: string
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: 'cel'
+    }
+    /** Draft */
+    'Draft-Input': {
+      /** Revision */
+      revision: number
+      spec: components['schemas']['AgentSpec-Input']
+    }
+    /** Draft */
+    'Draft-Output': {
+      /** Revision */
+      revision: number
+      spec: components['schemas']['AgentSpec-Output']
+    }
+    /** DraftConflict */
+    DraftConflict: {
+      /** Current Revision */
+      current_revision: number
+      /** Detail */
+      detail: string
+    }
+    /** Edge */
+    'Edge-Input': {
+      /**
+       * Condition
+       * @description null = always (unconditional)
+       */
+      condition?:
+        | (
+            | components['schemas']['LlmCondition-Input']
+            | components['schemas']['CelCondition-Input']
+            | components['schemas']['ElseCondition-Input']
+          )
+        | null
+      /** Id */
+      id: string
+      /**
+       * Order
+       * @default 0
+       */
+      order: number
+      /** Source */
+      source: string
+      /** Target */
+      target: string
+    }
+    /** Edge */
+    'Edge-Output': {
+      /**
+       * Condition
+       * @description null = always (unconditional)
+       */
+      condition:
+        | (
+            | components['schemas']['LlmCondition-Output']
+            | components['schemas']['CelCondition-Output']
+            | components['schemas']['ElseCondition-Output']
+          )
+        | null
+      /** Id */
+      id: string
+      /**
+       * Order
+       * @default 0
+       */
+      order: number
+      /** Source */
+      source: string
+      /** Target */
+      target: string
+    }
+    /** ElseCondition */
+    'ElseCondition-Input': {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: 'else'
+    }
+    /** ElseCondition */
+    'ElseCondition-Output': {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: 'else'
+    }
+    /** EndData */
+    'EndData-Input': {
+      /**
+       * Label
+       * @default End
+       */
+      label: string
+      /** Message */
+      message?: string | null
+      /**
+       * Outcome
+       * @default completed
+       */
+      outcome: string
+    }
+    /** EndData */
+    'EndData-Output': {
+      /**
+       * Label
+       * @default End
+       */
+      label: string
+      /** Message */
+      message: string | null
+      /**
+       * Outcome
+       * @default completed
+       */
+      outcome: string
+    }
+    /** EndNode */
+    'EndNode-Input': {
+      data?: components['schemas']['EndData-Input']
+      /** Id */
+      id: string
+      position: components['schemas']['Position']
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'end'
+    }
+    /** EndNode */
+    'EndNode-Output': {
+      data: components['schemas']['EndData-Output']
+      /** Id */
+      id: string
+      position: components['schemas']['Position']
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'end'
+    }
+    /** ExtractData */
+    'ExtractData-Input': {
+      /**
+       * Instructions
+       * @default
+       */
+      instructions: string
+      /** Label */
+      label: string
+      /**
+       * Outputs
+       * @description Names of declared variables to fill
+       */
+      outputs?: string[]
+    }
+    /** ExtractData */
+    'ExtractData-Output': {
+      /**
+       * Instructions
+       * @default
+       */
+      instructions: string
+      /** Label */
+      label: string
+      /**
+       * Outputs
+       * @description Names of declared variables to fill
+       */
+      outputs: string[]
+    }
+    /** ExtractNode */
+    'ExtractNode-Input': {
+      data: components['schemas']['ExtractData-Input']
+      /** Id */
+      id: string
+      position: components['schemas']['Position']
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'extract'
+    }
+    /** ExtractNode */
+    'ExtractNode-Output': {
+      data: components['schemas']['ExtractData-Output']
+      /** Id */
+      id: string
+      position: components['schemas']['Position']
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'extract'
+    }
+    /** Graph */
+    'Graph-Input': {
+      /** Edges */
+      edges?: components['schemas']['Edge-Input'][]
+      /** Nodes */
+      nodes?: (
+        | components['schemas']['StartNode-Input']
+        | components['schemas']['AgentStepNode-Input']
+        | components['schemas']['ExtractNode-Input']
+        | components['schemas']['RouterNode-Input']
+        | components['schemas']['ToolCallNode-Input']
+        | components['schemas']['HandoffNode-Input']
+        | components['schemas']['EndNode-Input']
+        | components['schemas']['NoteNode-Input']
+      )[]
+    }
+    /** Graph */
+    'Graph-Output': {
+      /** Edges */
+      edges: components['schemas']['Edge-Output'][]
+      /** Nodes */
+      nodes: (
+        | components['schemas']['StartNode-Output']
+        | components['schemas']['AgentStepNode-Output']
+        | components['schemas']['ExtractNode-Output']
+        | components['schemas']['RouterNode-Output']
+        | components['schemas']['ToolCallNode-Output']
+        | components['schemas']['HandoffNode-Output']
+        | components['schemas']['EndNode-Output']
+        | components['schemas']['NoteNode-Output']
+      )[]
+    }
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
       detail?: components['schemas']['ValidationError'][]
+    }
+    /** HandoffData */
+    'HandoffData-Input': {
+      /** Agent Id */
+      agent_id: string
+      /**
+       * Environment
+       * @default live
+       */
+      environment: string
+      /** Label */
+      label: string
+      /** Pass Variables */
+      pass_variables?: string[]
+    }
+    /** HandoffData */
+    'HandoffData-Output': {
+      /** Agent Id */
+      agent_id: string
+      /**
+       * Environment
+       * @default live
+       */
+      environment: string
+      /** Label */
+      label: string
+      /** Pass Variables */
+      pass_variables: string[]
+    }
+    /** HandoffNode */
+    'HandoffNode-Input': {
+      data: components['schemas']['HandoffData-Input']
+      /** Id */
+      id: string
+      position: components['schemas']['Position']
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'handoff'
+    }
+    /** HandoffNode */
+    'HandoffNode-Output': {
+      data: components['schemas']['HandoffData-Output']
+      /** Id */
+      id: string
+      position: components['schemas']['Position']
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'handoff'
+    }
+    /** Issue */
+    Issue: {
+      /** Code */
+      code: string
+      /** Edge Id */
+      edge_id?: string | null
+      /** Message */
+      message: string
+      /** Node Id */
+      node_id?: string | null
+      /**
+       * Severity
+       * @default error
+       * @enum {string}
+       */
+      severity: 'error' | 'warning'
+    }
+    /** KnowledgeRef */
+    KnowledgeRef: {
+      /** Source Id */
+      source_id: string
+    }
+    /** Limits */
+    'Limits-Input': {
+      /**
+       * Idle Timeout Seconds
+       * @default 30
+       */
+      idle_timeout_seconds: number
+      /**
+       * Max Session Seconds
+       * @default 900
+       */
+      max_session_seconds: number
+    }
+    /** Limits */
+    'Limits-Output': {
+      /**
+       * Idle Timeout Seconds
+       * @default 30
+       */
+      idle_timeout_seconds: number
+      /**
+       * Max Session Seconds
+       * @default 900
+       */
+      max_session_seconds: number
+    }
+    /** LlmCondition */
+    'LlmCondition-Input': {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: 'llm'
+      /** Text */
+      text: string
+    }
+    /** LlmCondition */
+    'LlmCondition-Output': {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: 'llm'
+      /** Text */
+      text: string
+    }
+    /** LlmSettings */
+    'LlmSettings-Input': {
+      /** Model */
+      model?: string | null
+      /**
+       * Provider
+       * @default workspace
+       */
+      provider: string
+      /**
+       * Temperature
+       * @default 0.6
+       */
+      temperature: number
+    }
+    /** LlmSettings */
+    'LlmSettings-Output': {
+      /** Model */
+      model: string | null
+      /**
+       * Provider
+       * @default workspace
+       */
+      provider: string
+      /**
+       * Temperature
+       * @default 0.6
+       */
+      temperature: number
     }
     /** Me */
     Me: {
@@ -165,6 +908,130 @@ export interface components {
       workspace_id: string
       /** Workspace Name */
       workspace_name: string
+    }
+    /** MemorySettings */
+    'MemorySettings-Input': {
+      /**
+       * Enabled
+       * @default false
+       */
+      enabled: boolean
+    }
+    /** MemorySettings */
+    'MemorySettings-Output': {
+      /**
+       * Enabled
+       * @default false
+       */
+      enabled: boolean
+    }
+    /** NoteData */
+    NoteData: {
+      /** Text */
+      text: string
+    }
+    /** NoteNode */
+    'NoteNode-Input': {
+      data: components['schemas']['NoteData']
+      /** Id */
+      id: string
+      position: components['schemas']['Position']
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'note'
+    }
+    /** NoteNode */
+    'NoteNode-Output': {
+      data: components['schemas']['NoteData']
+      /** Id */
+      id: string
+      position: components['schemas']['Position']
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'note'
+    }
+    /** Position */
+    Position: {
+      /** X */
+      x: number
+      /** Y */
+      y: number
+    }
+    /** PronunciationEntry */
+    PronunciationEntry: {
+      /** Say */
+      say: string
+      /** Term */
+      term: string
+    }
+    /** RecordingSettings */
+    'RecordingSettings-Input': {
+      /**
+       * Enabled
+       * @default false
+       */
+      enabled: boolean
+    }
+    /** RecordingSettings */
+    'RecordingSettings-Output': {
+      /**
+       * Enabled
+       * @default false
+       */
+      enabled: boolean
+    }
+    /** RouterData */
+    RouterData: {
+      /** Label */
+      label: string
+    }
+    /** RouterNode */
+    'RouterNode-Input': {
+      data: components['schemas']['RouterData']
+      /** Id */
+      id: string
+      position: components['schemas']['Position']
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'router'
+    }
+    /** RouterNode */
+    'RouterNode-Output': {
+      data: components['schemas']['RouterData']
+      /** Id */
+      id: string
+      position: components['schemas']['Position']
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'router'
+    }
+    /**
+     * SettingsOverride
+     * @description Per-node overrides; unset fields inherit the agent's settings.
+     */
+    'SettingsOverride-Input': {
+      /** Language */
+      language?: string | null
+      llm?: components['schemas']['LlmSettings-Input'] | null
+      voice?: components['schemas']['VoiceSettings-Input'] | null
+    }
+    /**
+     * SettingsOverride
+     * @description Per-node overrides; unset fields inherit the agent's settings.
+     */
+    'SettingsOverride-Output': {
+      /** Language */
+      language: string | null
+      llm: components['schemas']['LlmSettings-Output'] | null
+      voice: components['schemas']['VoiceSettings-Output'] | null
     }
     /** SignIn */
     SignIn: {
@@ -191,6 +1058,179 @@ export interface components {
       /** Password */
       password: string
     }
+    /** StartData */
+    'StartData-Input': {
+      /** First Message */
+      first_message?: string | null
+      /**
+       * Set
+       * @description Variable name → CEL expression
+       */
+      set?: {
+        [key: string]: string
+      }
+    }
+    /** StartData */
+    'StartData-Output': {
+      /** First Message */
+      first_message: string | null
+      /**
+       * Set
+       * @description Variable name → CEL expression
+       */
+      set: {
+        [key: string]: string
+      }
+    }
+    /** StartNode */
+    'StartNode-Input': {
+      data?: components['schemas']['StartData-Input']
+      /** Id */
+      id: string
+      position: components['schemas']['Position']
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'start'
+    }
+    /** StartNode */
+    'StartNode-Output': {
+      data: components['schemas']['StartData-Output']
+      /** Id */
+      id: string
+      position: components['schemas']['Position']
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'start'
+    }
+    /** SttSettings */
+    'SttSettings-Input': {
+      /**
+       * Model
+       * @default small.en
+       */
+      model: string
+      /**
+       * Provider
+       * @default whisper
+       */
+      provider: string
+    }
+    /** SttSettings */
+    'SttSettings-Output': {
+      /**
+       * Model
+       * @default small.en
+       */
+      model: string
+      /**
+       * Provider
+       * @default whisper
+       */
+      provider: string
+    }
+    /** ToolCallData */
+    'ToolCallData-Input': {
+      /**
+       * Args
+       * @description Argument → CEL expression
+       */
+      args?: {
+        [key: string]: string
+      }
+      /** Label */
+      label: string
+      /**
+       * Result Map
+       * @description Variable → JSONPath
+       */
+      result_map?: {
+        [key: string]: string
+      }
+      /** Tool */
+      tool: components['schemas']['BuiltinToolRef-Input'] | components['schemas']['WorkspaceToolRef-Input']
+    }
+    /** ToolCallData */
+    'ToolCallData-Output': {
+      /**
+       * Args
+       * @description Argument → CEL expression
+       */
+      args: {
+        [key: string]: string
+      }
+      /** Label */
+      label: string
+      /**
+       * Result Map
+       * @description Variable → JSONPath
+       */
+      result_map: {
+        [key: string]: string
+      }
+      /** Tool */
+      tool: components['schemas']['BuiltinToolRef-Output'] | components['schemas']['WorkspaceToolRef-Output']
+    }
+    /** ToolCallNode */
+    'ToolCallNode-Input': {
+      data: components['schemas']['ToolCallData-Input']
+      /** Id */
+      id: string
+      position: components['schemas']['Position']
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'tool_call'
+    }
+    /** ToolCallNode */
+    'ToolCallNode-Output': {
+      data: components['schemas']['ToolCallData-Output']
+      /** Id */
+      id: string
+      position: components['schemas']['Position']
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      type: 'tool_call'
+    }
+    /** TurnSettings */
+    'TurnSettings-Input': {
+      /**
+       * Interruptions
+       * @default true
+       */
+      interruptions: boolean
+      /**
+       * Sensitivity
+       * @default medium
+       * @enum {string}
+       */
+      sensitivity: 'low' | 'medium' | 'high'
+    }
+    /** TurnSettings */
+    'TurnSettings-Output': {
+      /**
+       * Interruptions
+       * @default true
+       */
+      interruptions: boolean
+      /**
+       * Sensitivity
+       * @default medium
+       * @enum {string}
+       */
+      sensitivity: 'low' | 'medium' | 'high'
+    }
+    /** Validation */
+    Validation: {
+      /** Issues */
+      issues: components['schemas']['Issue'][]
+    }
     /** ValidationError */
     ValidationError: {
       /** Context */
@@ -203,6 +1243,78 @@ export interface components {
       msg: string
       /** Error Type */
       type: string
+    }
+    /** VariableDef */
+    'VariableDef-Input': {
+      /**
+       * Description
+       * @default
+       */
+      description: string
+      /** Enum */
+      enum?: string[] | null
+      /** Name */
+      name: string
+      /**
+       * Type
+       * @default string
+       * @enum {string}
+       */
+      type: 'string' | 'number' | 'boolean' | 'date' | 'email' | 'enum' | 'object'
+    }
+    /** VariableDef */
+    'VariableDef-Output': {
+      /**
+       * Description
+       * @default
+       */
+      description: string
+      /** Enum */
+      enum: string[] | null
+      /** Name */
+      name: string
+      /**
+       * Type
+       * @default string
+       * @enum {string}
+       */
+      type: 'string' | 'number' | 'boolean' | 'date' | 'email' | 'enum' | 'object'
+    }
+    /** VoiceSettings */
+    'VoiceSettings-Input': {
+      /**
+       * Provider
+       * @default kokoro
+       */
+      provider: string
+      /**
+       * Speed
+       * @default 1
+       */
+      speed: number
+      /**
+       * Voice Id
+       * @default af_heart
+       */
+      voice_id: string
+    }
+    /** VoiceSettings */
+    'VoiceSettings-Output': {
+      /**
+       * Provider
+       * @default kokoro
+       */
+      provider: string
+      /**
+       * Speed
+       * @default 1
+       */
+      speed: number
+      /**
+       * Voice Id
+       * @default af_heart
+       */
+      voice_id: string
     }
     /** WorkspaceSettings */
     WorkspaceSettings: {
@@ -218,6 +1330,26 @@ export interface components {
       /** Open Signup */
       open_signup?: boolean | null
     }
+    /** WorkspaceToolRef */
+    'WorkspaceToolRef-Input': {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: 'workspace'
+      /** Tool Id */
+      tool_id: string
+    }
+    /** WorkspaceToolRef */
+    'WorkspaceToolRef-Output': {
+      /**
+       * @description discriminator enum property added by openapi-typescript
+       * @enum {string}
+       */
+      kind: 'workspace'
+      /** Tool Id */
+      tool_id: string
+    }
   }
   responses: never
   parameters: never
@@ -225,13 +1357,90 @@ export interface components {
   headers: never
   pathItems: never
 }
+export type AgentCreate = components['schemas']['AgentCreate']
+export type AgentPatch = components['schemas']['AgentPatch']
+export type AgentSettingsInput = components['schemas']['AgentSettings-Input']
+export type AgentSettingsOutput = components['schemas']['AgentSettings-Output']
+export type AgentSpecInput = components['schemas']['AgentSpec-Input']
+export type AgentSpecOutput = components['schemas']['AgentSpec-Output']
+export type AgentStepDataInput = components['schemas']['AgentStepData-Input']
+export type AgentStepDataOutput = components['schemas']['AgentStepData-Output']
+export type AgentStepNodeInput = components['schemas']['AgentStepNode-Input']
+export type AgentStepNodeOutput = components['schemas']['AgentStepNode-Output']
+export type AgentSummary = components['schemas']['AgentSummary']
+export type BuiltinToolRefInput = components['schemas']['BuiltinToolRef-Input']
+export type BuiltinToolRefOutput = components['schemas']['BuiltinToolRef-Output']
+export type CelConditionInput = components['schemas']['CelCondition-Input']
+export type CelConditionOutput = components['schemas']['CelCondition-Output']
+export type DraftInput = components['schemas']['Draft-Input']
+export type DraftOutput = components['schemas']['Draft-Output']
+export type DraftConflict = components['schemas']['DraftConflict']
+export type EdgeInput = components['schemas']['Edge-Input']
+export type EdgeOutput = components['schemas']['Edge-Output']
+export type ElseConditionInput = components['schemas']['ElseCondition-Input']
+export type ElseConditionOutput = components['schemas']['ElseCondition-Output']
+export type EndDataInput = components['schemas']['EndData-Input']
+export type EndDataOutput = components['schemas']['EndData-Output']
+export type EndNodeInput = components['schemas']['EndNode-Input']
+export type EndNodeOutput = components['schemas']['EndNode-Output']
+export type ExtractDataInput = components['schemas']['ExtractData-Input']
+export type ExtractDataOutput = components['schemas']['ExtractData-Output']
+export type ExtractNodeInput = components['schemas']['ExtractNode-Input']
+export type ExtractNodeOutput = components['schemas']['ExtractNode-Output']
+export type GraphInput = components['schemas']['Graph-Input']
+export type GraphOutput = components['schemas']['Graph-Output']
 export type HttpValidationError = components['schemas']['HTTPValidationError']
+export type HandoffDataInput = components['schemas']['HandoffData-Input']
+export type HandoffDataOutput = components['schemas']['HandoffData-Output']
+export type HandoffNodeInput = components['schemas']['HandoffNode-Input']
+export type HandoffNodeOutput = components['schemas']['HandoffNode-Output']
+export type Issue = components['schemas']['Issue']
+export type KnowledgeRef = components['schemas']['KnowledgeRef']
+export type LimitsInput = components['schemas']['Limits-Input']
+export type LimitsOutput = components['schemas']['Limits-Output']
+export type LlmConditionInput = components['schemas']['LlmCondition-Input']
+export type LlmConditionOutput = components['schemas']['LlmCondition-Output']
+export type LlmSettingsInput = components['schemas']['LlmSettings-Input']
+export type LlmSettingsOutput = components['schemas']['LlmSettings-Output']
 export type Me = components['schemas']['Me']
+export type MemorySettingsInput = components['schemas']['MemorySettings-Input']
+export type MemorySettingsOutput = components['schemas']['MemorySettings-Output']
+export type NoteData = components['schemas']['NoteData']
+export type NoteNodeInput = components['schemas']['NoteNode-Input']
+export type NoteNodeOutput = components['schemas']['NoteNode-Output']
+export type Position = components['schemas']['Position']
+export type PronunciationEntry = components['schemas']['PronunciationEntry']
+export type RecordingSettingsInput = components['schemas']['RecordingSettings-Input']
+export type RecordingSettingsOutput = components['schemas']['RecordingSettings-Output']
+export type RouterData = components['schemas']['RouterData']
+export type RouterNodeInput = components['schemas']['RouterNode-Input']
+export type RouterNodeOutput = components['schemas']['RouterNode-Output']
+export type SettingsOverrideInput = components['schemas']['SettingsOverride-Input']
+export type SettingsOverrideOutput = components['schemas']['SettingsOverride-Output']
 export type SignIn = components['schemas']['SignIn']
 export type SignUp = components['schemas']['SignUp']
+export type StartDataInput = components['schemas']['StartData-Input']
+export type StartDataOutput = components['schemas']['StartData-Output']
+export type StartNodeInput = components['schemas']['StartNode-Input']
+export type StartNodeOutput = components['schemas']['StartNode-Output']
+export type SttSettingsInput = components['schemas']['SttSettings-Input']
+export type SttSettingsOutput = components['schemas']['SttSettings-Output']
+export type ToolCallDataInput = components['schemas']['ToolCallData-Input']
+export type ToolCallDataOutput = components['schemas']['ToolCallData-Output']
+export type ToolCallNodeInput = components['schemas']['ToolCallNode-Input']
+export type ToolCallNodeOutput = components['schemas']['ToolCallNode-Output']
+export type TurnSettingsInput = components['schemas']['TurnSettings-Input']
+export type TurnSettingsOutput = components['schemas']['TurnSettings-Output']
+export type Validation = components['schemas']['Validation']
 export type ValidationError = components['schemas']['ValidationError']
+export type VariableDefInput = components['schemas']['VariableDef-Input']
+export type VariableDefOutput = components['schemas']['VariableDef-Output']
+export type VoiceSettingsInput = components['schemas']['VoiceSettings-Input']
+export type VoiceSettingsOutput = components['schemas']['VoiceSettings-Output']
 export type WorkspaceSettings = components['schemas']['WorkspaceSettings']
 export type WorkspaceSettingsPatch = components['schemas']['WorkspaceSettingsPatch']
+export type WorkspaceToolRefInput = components['schemas']['WorkspaceToolRef-Input']
+export type WorkspaceToolRefOutput = components['schemas']['WorkspaceToolRef-Output']
 export type $defs = Record<string, never>
 export interface operations {
   health_health_get: {
@@ -252,6 +1461,322 @@ export interface operations {
           'application/json': {
             [key: string]: unknown
           }
+        }
+      }
+    }
+  }
+  list_agents_v1_agents_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AgentSummary'][]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  create_agent_v1_agents_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AgentCreate']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AgentSummary']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  read_agent_v1_agents__agent_id__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        agent_id: string
+      }
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AgentSummary']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_agent_v1_agents__agent_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        agent_id: string
+      }
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  patch_agent_v1_agents__agent_id__patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        agent_id: string
+      }
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AgentPatch']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AgentSummary']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  read_draft_v1_agents__agent_id__draft_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        agent_id: string
+      }
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Draft-Output']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  save_draft_v1_agents__agent_id__draft_put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        agent_id: string
+      }
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['Draft-Input']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Draft-Output']
+        }
+      }
+      /** @description Conflict */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['DraftConflict']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  duplicate_agent_v1_agents__agent_id__duplicate_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        agent_id: string
+      }
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['AgentSummary']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  validate_spec_v1_agents__agent_id__validate_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        agent_id: string
+      }
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AgentSpec-Input']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Validation']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }

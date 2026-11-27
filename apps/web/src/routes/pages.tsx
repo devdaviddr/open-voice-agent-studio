@@ -1,5 +1,4 @@
 import { useSuspenseQuery, useQuery } from '@tanstack/react-query'
-import { Bot } from 'lucide-react'
 import { toast } from 'sonner'
 import { meQuery } from '@/api/auth'
 import { healthQuery, settingsQuery, useUpdateSettings } from '@/api/workspace'
@@ -9,25 +8,6 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-
-export function AgentsPage() {
-  return (
-    <>
-      <PageHeader title="Agents" description="Voice agents in this workspace." />
-      <div className="grid place-items-center px-8 py-24 text-center">
-        <div className="flex max-w-sm flex-col items-center gap-3">
-          <span className="bg-muted grid size-12 place-items-center rounded-xl">
-            <Bot className="text-muted-foreground size-6" />
-          </span>
-          <h2 className="font-medium">No agents yet</h2>
-          <p className="text-muted-foreground text-sm">
-            The agent builder arrives in the next MVP slice. You can already try the voices in the playground.
-          </p>
-        </div>
-      </div>
-    </>
-  )
-}
 
 const SERVICE_LABELS: Record<string, string> = {
   api: 'API',

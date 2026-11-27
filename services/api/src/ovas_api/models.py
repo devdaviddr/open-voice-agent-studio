@@ -5,7 +5,18 @@ import time
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Index, String, UniqueConstraint, func
+from sqlalchemy import (
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+)
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ovas_api.db import Base
@@ -67,3 +78,20 @@ class LoginFailure(IdMixin, Base):
     __tablename__ = "login_failures"
     __table_args__ = (Index("ix_login_failures_key_created", "key", "created_at"),)
     key: Mapped[str] = mapped_column(String(400))
+
+
+class Agent(IdMixin, Base):
+    """An agent and its single editable draft (product FR-4). Versions: agent_versions."""
+
+    __tablename__ = "agents"
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    name: Mapped[str] = mapped_column(String(120))
+    description: Mapped[str] = mapped_column(Text, default="")
+    draft: Mapped[dict] = mapped_column(JSONB)
+    draft_revision: Mapped[int] = mapped_column(Integer, default=1)
+    live_version: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )

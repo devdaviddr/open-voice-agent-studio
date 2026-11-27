@@ -17,6 +17,8 @@ export default defineConfig({
   },
   server: {
     host: true,
+    // File events do not cross Docker bind mounts on macOS; poll there (set in docker-compose.yml).
+    watch: process.env.VITE_POLL ? { usePolling: true, interval: 300 } : undefined,
     proxy: {
       '/api': {
         target: process.env.OVAS_API_URL ?? 'http://localhost:8000',

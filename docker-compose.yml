@@ -11,6 +11,10 @@ services:
     ports: ["5173:5173"]
     environment:
       OVAS_API_URL: http://api:8000
+      VITE_POLL: "1"
+    volumes:  # live reload of the studio source in development
+      - ./apps/web/src:/app/apps/web/src
+      - ./apps/web/index.html:/app/apps/web/index.html
     depends_on: [api]
 
   api:

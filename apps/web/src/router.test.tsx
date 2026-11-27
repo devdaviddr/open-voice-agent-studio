@@ -8,9 +8,10 @@ import { makeRouter } from './router'
 function renderAt(path: string, me: object | null) {
   vi.stubGlobal(
     'fetch',
-    vi.fn(async () =>
-      me ? Response.json(me) : Response.json({ detail: 'Sign in to continue.' }, { status: 401 }),
-    ),
+    vi.fn(async (req: Request) => {
+      if (!me) return Response.json({ detail: 'Sign in to continue.' }, { status: 401 })
+      return Response.json(new URL(req.url).pathname.endsWith('/v1/agents') ? [] : me)
+    }),
   )
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const router = makeRouter(queryClient)
