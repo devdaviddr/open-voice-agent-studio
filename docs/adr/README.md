@@ -24,3 +24,4 @@ Accepted decisions are immutable. To change one, add a new ADR that supersedes i
 | [0018](0018-observability-and-data-retention.md) | Observability and data retention | Accepted |
 | [0019](0019-encrypted-write-only-secrets.md) | Encrypted, write-only secrets | Accepted |
 | [0020](0020-agents-as-code-full-rest-api-and-cli.md) | Agents as code: full REST API and CLI | Accepted |
+| [0021](0021-builder-assistant-proposes-validated-graph-operations.md) | Builder assistant proposes validated graph operations | Proposed |
