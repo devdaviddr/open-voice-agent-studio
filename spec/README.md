@@ -11,9 +11,11 @@ The highest version is current; older ones are frozen history.
 
 | Feature | What |
 | --- | --- |
-| `product/` | The v1 product contract: FR-1–FR-35, milestones |
-| `mvp/` | The first usable release (0.3.0): what is being built now |
+| `product/` | The v1 product contract: FR-1–FR-36, milestones |
+| `mvp/` | The first usable release (0.3.0): implemented |
 | `m0-foundation/` | Repo foundations (layout, checks, Claude setup) |
+| `tools/` | Webhook tools, secrets, gallery, Tool call node (first slice of M3) |
+| `builder-assistant/` | Build and edit agents by chatting (FR-36) |
 
 ## Workflow
 
