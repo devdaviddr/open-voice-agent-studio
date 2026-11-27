@@ -5,7 +5,7 @@ from sqlalchemy import text
 from ovas_api import __version__
 from ovas_api.config import get_settings
 from ovas_api.db import get_engine
-from ovas_api.routes import agents, auth, settings, tts, versions
+from ovas_api.routes import agents, auth, internal, llm, sessions, settings, tts, versions
 from ovas_api.security import OriginGuard
 
 app = FastAPI(title="Open Voice Agent Studio API", version=__version__)
@@ -15,6 +15,9 @@ app.include_router(settings.router)
 app.include_router(tts.router)
 app.include_router(agents.router)
 app.include_router(versions.router)
+app.include_router(llm.router)
+app.include_router(sessions.router)
+app.include_router(internal.router)
 
 
 async def service_health(base_url: str) -> dict:

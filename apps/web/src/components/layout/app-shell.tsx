@@ -1,12 +1,13 @@
 import { Link, Outlet, useNavigate } from '@tanstack/react-router'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { Activity, AudioLines, Bot, LogOut, Settings, Volume2 } from 'lucide-react'
+import { Activity, AudioLines, Bot, LogOut, MessagesSquare, Settings, Volume2 } from 'lucide-react'
 import { meQuery, useSignOut } from '@/api/auth'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from './theme-toggle'
 
 const nav = [
   { to: '/agents', label: 'Agents', icon: Bot },
+  { to: '/sessions', label: 'Sessions', icon: MessagesSquare },
   { to: '/playground/tts', label: 'Voice playground', icon: Volume2 },
   { to: '/services', label: 'Services', icon: Activity },
   { to: '/settings', label: 'Settings', icon: Settings },

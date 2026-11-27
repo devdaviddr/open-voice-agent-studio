@@ -8,11 +8,14 @@ import {
 } from '@tanstack/react-router'
 import { agentQuery, agentsQuery, draftQuery } from '@/api/agents'
 import { meQuery } from '@/api/auth'
+import { llmQuery } from '@/api/llm'
+import { sessionQuery, sessionsQuery } from '@/api/sessions'
 import { AppShell } from '@/components/layout/app-shell'
 import { AuthPage } from './routes/auth-page'
 import { BuilderPage } from './builder/builder-page'
 import { AgentsPage } from './routes/agents-page'
 import { PlaygroundPage, ServicesPage, SettingsPage } from './routes/pages'
+import { SessionDetailPage, SessionsPage } from './routes/sessions-page'
 
 type Ctx = { queryClient: QueryClient }
 
@@ -98,6 +101,20 @@ const agentsRoute = createRoute({
   loader: ({ context }) => context.queryClient.ensureQueryData(agentsQuery),
   component: AgentsPage,
 })
+const sessionsRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/sessions',
+  loader: ({ context }) => context.queryClient.ensureQueryData(sessionsQuery()),
+  component: SessionsPage,
+})
+const sessionRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/sessions/$sessionId',
+  loader: ({ context, params }) => context.queryClient.ensureQueryData(sessionQuery(params.sessionId)),
+  component: function Session() {
+    return <SessionDetailPage sessionId={sessionRoute.useParams().sessionId} />
+  },
+})
 const playgroundRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/playground/tts',
@@ -111,6 +128,7 @@ const servicesRoute = createRoute({
 const settingsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/settings',
+  loader: ({ context }) => context.queryClient.ensureQueryData(llmQuery),
   component: SettingsPage,
 })
 
@@ -118,7 +136,15 @@ const routeTree = rootRoute.addChildren([
   signInRoute,
   signUpRoute,
   authedRoute.addChildren([
-    appRoute.addChildren([indexRoute, agentsRoute, playgroundRoute, servicesRoute, settingsRoute]),
+    appRoute.addChildren([
+      indexRoute,
+      agentsRoute,
+      sessionsRoute,
+      sessionRoute,
+      playgroundRoute,
+      servicesRoute,
+      settingsRoute,
+    ]),
     builderRoute,
   ]),
 ])

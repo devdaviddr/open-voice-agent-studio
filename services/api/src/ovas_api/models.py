@@ -112,3 +112,50 @@ class AgentVersion(IdMixin, Base):
         ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
     spec: Mapped[dict] = mapped_column(JSONB)
+
+
+class LlmProvider(IdMixin, Base):
+    """The workspace's OpenAI-compatible LLM endpoint (MVP FR-21). One per workspace."""
+
+    __tablename__ = "llm_providers"
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("workspaces.id", ondelete="CASCADE"), unique=True
+    )
+    base_url: Mapped[str] = mapped_column(String(500))
+    default_model: Mapped[str] = mapped_column(String(200))
+    reasoning_effort: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    api_key_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class Session(IdMixin, Base):
+    """One conversation with an agent, and the exact spec it ran (MVP FR-20)."""
+
+    __tablename__ = "sessions"
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    agent_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("agents.id", ondelete="CASCADE"), index=True
+    )
+    version_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    draft_revision: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    mode: Mapped[str] = mapped_column(String(10), default="text")
+    channel: Mapped[str] = mapped_column(String(20), default="console")
+    end_user_id: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    spec: Mapped[dict] = mapped_column(JSONB)
+    variables: Mapped[dict] = mapped_column(JSONB, default=dict)
+    usage: Mapped[dict] = mapped_column(JSONB, default=dict)
+    outcome: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class SessionEvent(IdMixin, Base):
+    __tablename__ = "session_events"
+    __table_args__ = (UniqueConstraint("session_id", "seq"),)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    session_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("sessions.id", ondelete="CASCADE"))
+    seq: Mapped[int] = mapped_column(Integer)
+    type: Mapped[str] = mapped_column(String(40))
+    payload: Mapped[dict] = mapped_column(JSONB)

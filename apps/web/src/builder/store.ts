@@ -29,6 +29,8 @@ type State = Content & {
   /** Increments on every load so subscribers can tell a reload from an edit. */
   loadCount: number
   issues: Issue[]
+  /** Node the test console's session is in; highlighted on the canvas. */
+  activeNodeId: string | null
   saveState: SaveState
   conflictRevision: number | null
   clipboard: { nodes: FlowNode[]; edges: FlowEdge[] } | null
@@ -47,6 +49,7 @@ type State = Content & {
   paste: () => void
   duplicateSelection: () => void
   setIssues: (issues: Issue[]) => void
+  setActiveNode: (id: string | null) => void
   setSaveState: (s: SaveState, conflictRevision?: number | null) => void
   markSaved: (revision: number) => void
 }
@@ -104,6 +107,7 @@ export const useBuilder = create<State>()(
       edges: [],
       meta: {} as Meta,
       issues: [],
+      activeNodeId: null,
       saveState: 'saved',
       conflictRevision: null,
       clipboard: null,
@@ -232,6 +236,7 @@ export const useBuilder = create<State>()(
       },
 
       setIssues: (issues) => set({ issues }),
+      setActiveNode: (activeNodeId) => set({ activeNodeId }),
       setSaveState: (saveState, conflictRevision = null) => set({ saveState, conflictRevision }),
       markSaved: (revision) => set({ revision, saveState: 'saved', conflictRevision: null }),
     }),

@@ -1,6 +1,11 @@
 import { useSuspenseQuery, useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { useState } from 'react'
 import { meQuery } from '@/api/auth'
+import { llmQuery, useTestLlm, useUpdateLlm } from '@/api/llm'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { healthQuery, settingsQuery, useUpdateSettings } from '@/api/workspace'
 import { PageHeader } from '@/components/layout/app-shell'
 import { SpeakCard } from '@/components/speak-card'
@@ -44,6 +49,113 @@ export function ServicesPage() {
         </Card>
       </div>
     </>
+  )
+}
+
+function LlmCard({ isOwner }: { isOwner: boolean }) {
+  const { data: llm } = useSuspenseQuery(llmQuery)
+  const update = useUpdateLlm()
+  const test = useTestLlm()
+  const [baseUrl, setBaseUrl] = useState(llm.base_url)
+  const [model, setModel] = useState(llm.default_model)
+  const [effort, setEffort] = useState(llm.reasoning_effort ?? 'off')
+  const [apiKey, setApiKey] = useState('')
+  const save = () =>
+    update.mutate(
+      {
+        base_url: baseUrl.trim(),
+        default_model: model.trim(),
+        reasoning_effort: effort === 'off' ? null : effort,
+        api_key: apiKey ? apiKey : null,
+      },
+      {
+        onSuccess: () => {
+          setApiKey('')
+          toast.success('LLM settings saved')
+        },
+        onError: (e) => toast.error(e.message),
+      },
+    )
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Language model</CardTitle>
+        <CardDescription>
+          Any OpenAI-compatible endpoint: Ollama, vLLM, llama.cpp or a cloud provider.
+          {!llm.configured && ' Using the server default until you save.'}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="llm-url">Endpoint URL</Label>
+          <Input
+            id="llm-url"
+            disabled={!isOwner}
+            value={baseUrl}
+            onChange={(e) => setBaseUrl(e.target.value)}
+            placeholder="http://host.docker.internal:11434/v1"
+          />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="llm-model">Default model</Label>
+            <Input
+              id="llm-model"
+              disabled={!isOwner}
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="llm-effort">Reasoning effort</Label>
+            <Select value={effort} onValueChange={(v) => v && setEffort(v as string)} disabled={!isOwner}>
+              <SelectTrigger id="llm-effort" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">none (fastest; turns thinking off)</SelectItem>
+                <SelectItem value="low">low</SelectItem>
+                <SelectItem value="medium">medium</SelectItem>
+                <SelectItem value="high">high</SelectItem>
+                <SelectItem value="off">not sent</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="llm-key">API key</Label>
+          <Input
+            id="llm-key"
+            type="password"
+            autoComplete="off"
+            disabled={!isOwner}
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder={llm.api_key.set ? 'Saved. Type to replace it.' : 'Not needed for local models'}
+          />
+          <p className="text-muted-foreground text-xs">Stored encrypted. It is never shown again.</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button disabled={!isOwner || update.isPending} onClick={save}>
+            Save
+          </Button>
+          <Button variant="outline" disabled={test.isPending} onClick={() => test.mutate()}>
+            {test.isPending ? 'Testing…' : 'Test connection'}
+          </Button>
+          {test.data && (
+            <span
+              className={
+                test.data.ok ? 'text-sm text-emerald-600 dark:text-emerald-400' : 'text-destructive text-sm'
+              }
+            >
+              {test.data.ok
+                ? `Connected. ${test.data.models?.length ?? 0} models available.`
+                : test.data.error}
+            </span>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -99,6 +211,7 @@ export function SettingsPage() {
             />
           </CardContent>
         </Card>
+        <LlmCard isOwner={isOwner} />
       </div>
     </>
   )

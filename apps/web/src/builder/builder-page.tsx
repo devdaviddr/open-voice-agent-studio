@@ -11,7 +11,7 @@ import {
   useReactFlow,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import { ArrowLeft, Check, CircleAlert, CloudOff, Loader2, Redo2, Undo2 } from 'lucide-react'
+import { ArrowLeft, Check, CircleAlert, CloudOff, Loader2, MessageSquare, Redo2, Undo2 } from 'lucide-react'
 import { useStore } from 'zustand'
 import { agentQuery, draftQuery, DraftConflictError, saveDraft, validateSpec } from '@/api/agents'
 import {
@@ -32,6 +32,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { flowToSpec, type NodeKind } from './convert'
 import { edgeTypes, KINDS, nodeTypes } from './flow-components'
 import { Inspector } from './inspector'
+import { TestConsole } from './console'
 import { PublishButton, VersionsButton } from './versions'
 import { contentKey, isValidConnection, redo, undo, useBuilder } from './store'
 
@@ -51,6 +52,7 @@ function Builder({ agentId }: { agentId: string }) {
   const { data: agent } = useSuspenseQuery(agentQuery(agentId))
   const { data: draft } = useSuspenseQuery(draftQuery(agentId))
   const loadedFor = useBuilder((s) => s.agentId)
+  const [testing, setTesting] = useState(false)
 
   useEffect(() => {
     useBuilder.getState().load(agentId, draft.revision, draft.spec)
@@ -63,19 +65,31 @@ function Builder({ agentId }: { agentId: string }) {
   if (loadedFor !== agentId) return null
   return (
     <div className="bg-background flex h-svh flex-col">
-      <TopBar agentId={agentId} name={agent.name} liveVersion={agent.live_version} />
+      <TopBar
+        agentId={agentId}
+        name={agent.name}
+        liveVersion={agent.live_version}
+        testing={testing}
+        onToggleTest={() => setTesting((t) => !t)}
+      />
       <div className="flex min-h-0 flex-1">
         <Palette />
         <main className="min-w-0 flex-1">
           <Canvas />
         </main>
-        <aside className="w-80 shrink-0 border-l" aria-label="Inspector">
-          <ScrollArea className="h-full">
-            <div className="p-4">
-              <Inspector />
-            </div>
-          </ScrollArea>
-        </aside>
+        {testing ? (
+          <aside className="w-[420px] shrink-0 border-l" aria-label="Test console">
+            <TestConsole agentId={agentId} onClose={() => setTesting(false)} />
+          </aside>
+        ) : (
+          <aside className="w-80 shrink-0 border-l" aria-label="Inspector">
+            <ScrollArea className="h-full">
+              <div className="p-4">
+                <Inspector />
+              </div>
+            </ScrollArea>
+          </aside>
+        )}
       </div>
       <ConflictDialog agentId={agentId} />
     </div>
@@ -191,10 +205,14 @@ function TopBar({
   agentId,
   name,
   liveVersion,
+  testing,
+  onToggleTest,
 }: {
   agentId: string
   name: string
   liveVersion: number | null | undefined
+  testing: boolean
+  onToggleTest: () => void
 }) {
   const revision = useBuilder((s) => s.revision)
   const issues = useBuilder((s) => s.issues)
@@ -257,6 +275,14 @@ function TopBar({
           </span>
         )}
         <VersionsButton agentId={agentId} />
+        <Button
+          variant={testing ? 'secondary' : 'outline'}
+          size="sm"
+          onClick={onToggleTest}
+          aria-pressed={testing}
+        >
+          <MessageSquare className="size-3.5" /> Test
+        </Button>
         <PublishButton agentId={agentId} />
       </div>
     </header>

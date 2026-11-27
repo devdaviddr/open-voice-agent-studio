@@ -22,6 +22,57 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/internal/sessions/{session_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Runtime Session */
+    get: operations['runtime_session_internal_sessions__session_id__get']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/internal/sessions/{session_id}/end': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** End Session */
+    post: operations['end_session_internal_sessions__session_id__end_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/internal/sessions/{session_id}/events': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Append Events */
+    post: operations['append_events_internal_sessions__session_id__events_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/v1/agents': {
     parameters: {
       query?: never
@@ -271,6 +322,42 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/v1/sessions': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Sessions */
+    get: operations['list_sessions_v1_sessions_get']
+    put?: never
+    /** Start Session */
+    post: operations['start_session_v1_sessions_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/sessions/{session_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Read Session */
+    get: operations['read_session_v1_sessions__session_id__get']
+    put?: never
+    post?: never
+    /** Delete Session */
+    delete: operations['delete_session_v1_sessions__session_id__delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/v1/settings': {
     parameters: {
       query?: never
@@ -287,6 +374,41 @@ export interface paths {
     head?: never
     /** Patch Settings */
     patch: operations['patch_settings_v1_settings_patch']
+    trace?: never
+  }
+  '/v1/settings/llm': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** Read Llm */
+    get: operations['read_llm_v1_settings_llm_get']
+    /** Update Llm */
+    put: operations['update_llm_v1_settings_llm_put']
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/settings/llm/test': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Test Llm */
+    post: operations['test_llm_v1_settings_llm_test_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
     trace?: never
   }
   '/v1/tts': {
@@ -773,6 +895,31 @@ export interface components {
        */
       type: 'end'
     }
+    /** Event */
+    Event: {
+      /**
+       * At
+       * Format: date-time
+       */
+      at: string
+      /** Payload */
+      payload: {
+        [key: string]: unknown
+      }
+      /** Seq */
+      seq: number
+      /** Type */
+      type: string
+    }
+    /** EventIn */
+    EventIn: {
+      /** Payload */
+      payload: {
+        [key: string]: unknown
+      }
+      /** Type */
+      type: string
+    }
     /** ExtractData */
     'ExtractData-Input': {
       /**
@@ -1000,6 +1147,32 @@ export interface components {
       /** Text */
       text: string
     }
+    /** LlmConfig */
+    LlmConfig: {
+      api_key: components['schemas']['SecretState']
+      /** Base Url */
+      base_url: string
+      /** Configured */
+      configured: boolean
+      /** Default Model */
+      default_model: string
+      /** Reasoning Effort */
+      reasoning_effort: string | null
+    }
+    /** LlmConfigUpdate */
+    LlmConfigUpdate: {
+      /**
+       * Api Key
+       * @description New key. Omit or null to keep the current one; '' to clear it.
+       */
+      api_key?: string | null
+      /** Base Url */
+      base_url: string
+      /** Default Model */
+      default_model: string
+      /** Reasoning Effort */
+      reasoning_effort?: string | null
+    }
     /** LlmSettings */
     'LlmSettings-Input': {
       /** Model */
@@ -1029,6 +1202,18 @@ export interface components {
        * @default 0.6
        */
       temperature: number
+    }
+    /** LlmTest */
+    LlmTest: {
+      /** Error */
+      error?: string | null
+      /**
+       * Models
+       * @default []
+       */
+      models: string[]
+      /** Ok */
+      ok: boolean
     }
     /** Me */
     Me: {
@@ -1132,6 +1317,20 @@ export interface components {
        */
       enabled: boolean
     }
+    /**
+     * ResolvedLlm
+     * @description What the runtime uses. Never returned by a public endpoint.
+     */
+    ResolvedLlm: {
+      /** Api Key */
+      api_key: string | null
+      /** Base Url */
+      base_url: string
+      /** Model */
+      model: string
+      /** Reasoning Effort */
+      reasoning_effort: string | null
+    }
     /** RouterData */
     RouterData: {
       /** Label */
@@ -1160,6 +1359,171 @@ export interface components {
        * @enum {string}
        */
       type: 'router'
+    }
+    /** RuntimeSession */
+    RuntimeSession: {
+      /**
+       * Agent Id
+       * Format: uuid
+       */
+      agent_id: string
+      /** End User Id */
+      end_user_id: string | null
+      /** Ended */
+      ended: boolean
+      llm: components['schemas']['ResolvedLlm']
+      /**
+       * Session Id
+       * Format: uuid
+       */
+      session_id: string
+      /** Spec */
+      spec: {
+        [key: string]: unknown
+      }
+      /** Variables */
+      variables: {
+        [key: string]: unknown
+      }
+      /**
+       * Workspace Id
+       * Format: uuid
+       */
+      workspace_id: string
+    }
+    /** SecretState */
+    SecretState: {
+      /** Set */
+      set: boolean
+    }
+    /** SessionDetail */
+    SessionDetail: {
+      /**
+       * Agent Id
+       * Format: uuid
+       */
+      agent_id: string
+      /** Agent Name */
+      agent_name: string
+      /** Channel */
+      channel: string
+      /** Draft Revision */
+      draft_revision: number | null
+      /** End User Id */
+      end_user_id: string | null
+      /** Ended At */
+      ended_at: string | null
+      /** Events */
+      events: components['schemas']['Event'][]
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+      /** Outcome */
+      outcome: string | null
+      /**
+       * Started At
+       * Format: date-time
+       */
+      started_at: string
+      /** Turns */
+      turns: number
+      /** Variables */
+      variables: {
+        [key: string]: unknown
+      }
+      /** Version Number */
+      version_number: number | null
+    }
+    /** SessionEnd */
+    SessionEnd: {
+      /** Outcome */
+      outcome: string | null
+      /** Usage */
+      usage: {
+        [key: string]: unknown
+      }
+      /** Variables */
+      variables: {
+        [key: string]: unknown
+      }
+    }
+    /** SessionNotRunnable */
+    SessionNotRunnable: {
+      /** Detail */
+      detail: string
+      /**
+       * Issues
+       * @default []
+       */
+      issues: components['schemas']['Issue'][]
+    }
+    /** SessionStart */
+    SessionStart: {
+      /**
+       * Agent Id
+       * Format: uuid
+       */
+      agent_id: string
+      /** End User Id */
+      end_user_id?: string | null
+      /**
+       * Target
+       * @default draft
+       */
+      target: ('draft' | 'live') | number
+      /**
+       * Variables
+       * @default {}
+       */
+      variables: {
+        [key: string]: unknown
+      }
+    }
+    /** SessionStarted */
+    SessionStarted: {
+      /**
+       * Session Id
+       * Format: uuid
+       */
+      session_id: string
+      /** Stream Url */
+      stream_url: string
+    }
+    /** SessionSummary */
+    SessionSummary: {
+      /**
+       * Agent Id
+       * Format: uuid
+       */
+      agent_id: string
+      /** Agent Name */
+      agent_name: string
+      /** Channel */
+      channel: string
+      /** Draft Revision */
+      draft_revision: number | null
+      /** End User Id */
+      end_user_id: string | null
+      /** Ended At */
+      ended_at: string | null
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+      /** Outcome */
+      outcome: string | null
+      /**
+       * Started At
+       * Format: date-time
+       */
+      started_at: string
+      /** Turns */
+      turns: number
+      /** Version Number */
+      version_number: number | null
     }
     /**
      * SettingsOverride
@@ -1566,6 +1930,8 @@ export type EndDataInput = components['schemas']['EndData-Input']
 export type EndDataOutput = components['schemas']['EndData-Output']
 export type EndNodeInput = components['schemas']['EndNode-Input']
 export type EndNodeOutput = components['schemas']['EndNode-Output']
+export type Event = components['schemas']['Event']
+export type EventIn = components['schemas']['EventIn']
 export type ExtractDataInput = components['schemas']['ExtractData-Input']
 export type ExtractDataOutput = components['schemas']['ExtractData-Output']
 export type ExtractNodeInput = components['schemas']['ExtractNode-Input']
@@ -1585,8 +1951,11 @@ export type LimitsOutput = components['schemas']['Limits-Output']
 export type LivePointer = components['schemas']['LivePointer']
 export type LlmConditionInput = components['schemas']['LlmCondition-Input']
 export type LlmConditionOutput = components['schemas']['LlmCondition-Output']
+export type LlmConfig = components['schemas']['LlmConfig']
+export type LlmConfigUpdate = components['schemas']['LlmConfigUpdate']
 export type LlmSettingsInput = components['schemas']['LlmSettings-Input']
 export type LlmSettingsOutput = components['schemas']['LlmSettings-Output']
+export type LlmTest = components['schemas']['LlmTest']
 export type Me = components['schemas']['Me']
 export type MemorySettingsInput = components['schemas']['MemorySettings-Input']
 export type MemorySettingsOutput = components['schemas']['MemorySettings-Output']
@@ -1599,9 +1968,18 @@ export type Publish = components['schemas']['Publish']
 export type PublishRejected = components['schemas']['PublishRejected']
 export type RecordingSettingsInput = components['schemas']['RecordingSettings-Input']
 export type RecordingSettingsOutput = components['schemas']['RecordingSettings-Output']
+export type ResolvedLlm = components['schemas']['ResolvedLlm']
 export type RouterData = components['schemas']['RouterData']
 export type RouterNodeInput = components['schemas']['RouterNode-Input']
 export type RouterNodeOutput = components['schemas']['RouterNode-Output']
+export type RuntimeSession = components['schemas']['RuntimeSession']
+export type SecretState = components['schemas']['SecretState']
+export type SessionDetail = components['schemas']['SessionDetail']
+export type SessionEnd = components['schemas']['SessionEnd']
+export type SessionNotRunnable = components['schemas']['SessionNotRunnable']
+export type SessionStart = components['schemas']['SessionStart']
+export type SessionStarted = components['schemas']['SessionStarted']
+export type SessionSummary = components['schemas']['SessionSummary']
 export type SettingsOverrideInput = components['schemas']['SettingsOverride-Input']
 export type SettingsOverrideOutput = components['schemas']['SettingsOverride-Output']
 export type SignIn = components['schemas']['SignIn']
@@ -1650,6 +2028,109 @@ export interface operations {
           'application/json': {
             [key: string]: unknown
           }
+        }
+      }
+    }
+  }
+  runtime_session_internal_sessions__session_id__get: {
+    parameters: {
+      query?: never
+      header?: {
+        'x-internal-key'?: string | null
+      }
+      path: {
+        session_id: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['RuntimeSession']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  end_session_internal_sessions__session_id__end_post: {
+    parameters: {
+      query?: never
+      header?: {
+        'x-internal-key'?: string | null
+      }
+      path: {
+        session_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SessionEnd']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  append_events_internal_sessions__session_id__events_post: {
+    parameters: {
+      query?: never
+      header?: {
+        'x-internal-key'?: string | null
+      }
+      path: {
+        session_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['EventIn'][]
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
         }
       }
     }
@@ -2309,6 +2790,139 @@ export interface operations {
       }
     }
   }
+  list_sessions_v1_sessions_get: {
+    parameters: {
+      query?: {
+        agent_id?: string | null
+        limit?: number
+      }
+      header?: never
+      path?: never
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SessionSummary'][]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  start_session_v1_sessions_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SessionStart']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SessionStarted']
+        }
+      }
+      /** @description Unprocessable Entity */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SessionNotRunnable']
+        }
+      }
+    }
+  }
+  read_session_v1_sessions__session_id__get: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        session_id: string
+      }
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SessionDetail']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_session_v1_sessions__session_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        session_id: string
+      }
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
   get_settings_v1_settings_get: {
     parameters: {
       query?: never
@@ -2362,6 +2976,103 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['WorkspaceSettings']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  read_llm_v1_settings_llm_get: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LlmConfig']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  update_llm_v1_settings_llm_put: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['LlmConfigUpdate']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LlmConfig']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  test_llm_v1_settings_llm_test_post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LlmTest']
         }
       }
       /** @description Validation Error */

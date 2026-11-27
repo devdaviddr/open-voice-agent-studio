@@ -24,6 +24,12 @@ export default defineConfig({
         target: process.env.OVAS_API_URL ?? 'http://localhost:8000',
         rewrite: (p) => p.replace(/^\/api/, ''),
       },
+      // Live sessions (WebSocket) go straight to the runtime.
+      '/rt': {
+        target: process.env.OVAS_RUNTIME_URL ?? 'http://localhost:8100',
+        rewrite: (p) => p.replace(/^\/rt/, ''),
+        ws: true,
+      },
     },
   },
 })

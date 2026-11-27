@@ -111,6 +111,7 @@ export const FlowNodeView = memo(function FlowNodeView(props: NodeProps<FlowNode
   const node = props as unknown as FlowNode
   const readOnly = useContext(ReadOnlyCanvas)
   const issues = useBuilder(useShallow((s) => (readOnly ? [] : s.issues.filter((i) => i.node_id === id))))
+  const active = useBuilder((s) => !readOnly && s.activeNodeId === id)
   const k = KINDS[type as NodeKind]
   const Icon = k.icon
   if (type === 'note') {
@@ -132,6 +133,7 @@ export const FlowNodeView = memo(function FlowNodeView(props: NodeProps<FlowNode
         'bg-card text-card-foreground w-60 rounded-xl border shadow-sm',
         selected && 'ring-ring ring-2',
         issues.length > 0 && 'border-destructive/60',
+        active && 'shadow-[0_0_0_4px] shadow-emerald-500/50 transition-shadow',
       )}
     >
       {type !== 'start' && (
@@ -144,6 +146,12 @@ export const FlowNodeView = memo(function FlowNodeView(props: NodeProps<FlowNode
         <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
           {k.name}
         </span>
+        {active && (
+          <span
+            className="ml-auto size-2 animate-pulse rounded-full bg-emerald-500"
+            aria-label="Active in test"
+          />
+        )}
       </div>
       <div className="space-y-1.5 px-3 pt-1.5 pb-3">
         <div className="text-sm font-medium">{s.title}</div>
