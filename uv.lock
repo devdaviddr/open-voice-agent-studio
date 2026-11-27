@@ -1721,7 +1721,7 @@ wheels = [
 
 [[package]]
 name = "ovas-api"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "services/api" }
 dependencies = [
     { name = "alembic" },
@@ -1762,7 +1762,7 @@ requires-dist = [
 
 [[package]]
 name = "ovas-core"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "packages/core" }
 dependencies = [
     { name = "cel-python" },
@@ -1777,7 +1777,7 @@ requires-dist = [
 
 [[package]]
 name = "ovas-runtime"
-version = "0.2.0"
+version = "0.3.0"
 source = { editable = "services/runtime" }
 dependencies = [
     { name = "fastapi" },
