@@ -7,6 +7,7 @@ COPY packages/core/pyproject.toml packages/core/
 COPY services/api/pyproject.toml services/api/
 COPY services/runtime/pyproject.toml services/runtime/
 COPY providers/tts-kokoro/pyproject.toml providers/tts-kokoro/
+COPY providers/stt-whisper/pyproject.toml providers/stt-whisper/
 RUN uv sync --frozen --no-dev --package ovas-runtime --no-install-workspace
 COPY packages/core packages/core
 COPY services/runtime services/runtime

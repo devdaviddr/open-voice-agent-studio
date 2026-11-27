@@ -411,6 +411,23 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/v1/stt': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** Stt */
+    post: operations['stt_v1_stt_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/v1/tts': {
     parameters: {
       query?: never
@@ -1710,6 +1727,15 @@ export interface components {
        */
       type: 'tool_call'
     }
+    /** Transcript */
+    Transcript: {
+      /** Duration Ms */
+      duration_ms: number
+      /** Language */
+      language: string
+      /** Text */
+      text: string
+    }
     /** TurnSettings */
     'TurnSettings-Input': {
       /**
@@ -1994,6 +2020,7 @@ export type ToolCallDataInput = components['schemas']['ToolCallData-Input']
 export type ToolCallDataOutput = components['schemas']['ToolCallData-Output']
 export type ToolCallNodeInput = components['schemas']['ToolCallNode-Input']
 export type ToolCallNodeOutput = components['schemas']['ToolCallNode-Output']
+export type Transcript = components['schemas']['Transcript']
 export type TurnSettingsInput = components['schemas']['TurnSettings-Input']
 export type TurnSettingsOutput = components['schemas']['TurnSettings-Output']
 export type Validation = components['schemas']['Validation']
@@ -3073,6 +3100,43 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['LlmTest']
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  stt_v1_stt_post: {
+    parameters: {
+      query?: {
+        language?: string | null
+      }
+      header?: never
+      path?: never
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody: {
+      content: {
+        'audio/*': string
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['Transcript']
         }
       }
       /** @description Validation Error */

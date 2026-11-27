@@ -18,6 +18,7 @@ LLM such as Ollama). MIT licensed.
 | `services/runtime` | Runs agent sessions | Python, FastAPI | 8100 |
 | `packages/core` | Shared AgentSpec schema, validation, workflow engine | Python, Pydantic | — |
 | `providers/tts-kokoro` | Text-to-speech, [Kokoro-82M](https://huggingface.co/hexgrad/Kokoro-82M) | Python, kokoro-onnx | 8002 |
+| `providers/stt-whisper` | Speech-to-text for push-to-talk, [Whisper](https://github.com/SYSTRAN/faster-whisper) | Python, faster-whisper | 8003 |
 | `db` | Postgres 17 with pgvector | — | internal |
 
 The agent workflow schema is defined once in `packages/core` and generated into TypeScript for the

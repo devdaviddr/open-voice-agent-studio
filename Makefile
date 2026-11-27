@@ -14,7 +14,7 @@ install: ## Install Python and JS dependencies
 	pnpm exec lefthook install
 
 dev: ## Run the web app locally against the compose backend
-	docker compose up -d --build api runtime tts-kokoro db
+	docker compose up -d --build api runtime tts-kokoro stt-whisper db
 	pnpm dev
 
 up: ## Build and start the whole stack

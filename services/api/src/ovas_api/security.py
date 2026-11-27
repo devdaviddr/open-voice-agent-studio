@@ -1,7 +1,9 @@
 """CSRF defence for cookie-authenticated requests (MVP FR-3).
 
 State-changing requests that carry the session cookie must come from an allowed Origin and use a
-JSON (or multipart upload) body. Requests without the cookie cannot act as a user, so they pass.
+JSON, multipart upload or audio body. Requests without the cookie cannot act as a user, so they
+pass. An `audio/*` body (push-to-talk, MVP FR-23) is not a CORS "simple" content type, so a
+cross-site page cannot send one without a preflight that the API never approves.
 """
 
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
@@ -12,7 +14,7 @@ from ovas_api.auth import COOKIE
 from ovas_api.config import get_settings
 
 UNSAFE = {"POST", "PUT", "PATCH", "DELETE"}
-BODY_TYPES = ("application/json", "multipart/form-data")
+BODY_TYPES = ("application/json", "multipart/form-data", "audio/")
 
 
 class OriginGuard(BaseHTTPMiddleware):
