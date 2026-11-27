@@ -9,9 +9,11 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 
+from ovas_api import jobs
 from ovas_api.auth import Db
 from ovas_api.config import get_settings
 from ovas_api.knowledge.service import Hit, search
+from ovas_api.memory.service import recall, wants_memory
 from ovas_api.models import Session, SessionEvent
 from ovas_api.routes.llm import ResolvedLlm, resolve_llm
 
@@ -94,7 +96,10 @@ async def end_session(session_id: uuid.UUID, body: SessionEnd, db: Db) -> None:
         s.outcome = body.outcome
         s.variables = body.variables
         s.usage = body.usage
+        if wants_memory(s):  # MVP FR-16: extract durable facts in the background
+            jobs.enqueue(db, s.workspace_id, "extract_memory", {"session_id": str(s.id)})
         await db.commit()
+        jobs.wake()
 
 
 class KnowledgeQuery(BaseModel):
@@ -116,3 +121,14 @@ async def search_knowledge(session_id: uuid.UUID, body: KnowledgeQuery, db: Db) 
         except ValueError:
             continue
     return await search(db, s.workspace_id, body.query, ids, body.k)
+
+
+class MemoryQuery(BaseModel):
+    query: str = Field(default="", max_length=2000)  # empty = most recent facts
+    k: int = Field(default=5, ge=1, le=10)
+
+
+@router.post("/sessions/{session_id}/memory/recall")
+async def recall_memory(session_id: uuid.UUID, body: MemoryQuery, db: Db) -> list[str]:
+    """Facts about this session's end user for its agent (MVP FR-16)."""
+    return await recall(db, await _session(db, session_id), body.query, body.k)

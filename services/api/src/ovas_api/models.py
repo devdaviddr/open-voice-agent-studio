@@ -213,3 +213,20 @@ class Job(IdMixin, Base):
     attempts: Mapped[int] = mapped_column(Integer, default=0)
     error: Mapped[str | None] = mapped_column(Text, nullable=True)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class Memory(IdMixin, Base):
+    """A durable fact about one end user of one agent (MVP FR-16)."""
+
+    __tablename__ = "memories"
+    __table_args__ = (Index("ix_memories_agent_user", "agent_id", "end_user_id"),)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    agent_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("agents.id", ondelete="CASCADE"))
+    end_user_id: Mapped[str] = mapped_column(String(200))
+    fact: Mapped[str] = mapped_column(Text)
+    embedding: Mapped[list[float]] = mapped_column(Vector(EMBEDDING_DIM))
+    session_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("sessions.id", ondelete="SET NULL"), nullable=True
+    )

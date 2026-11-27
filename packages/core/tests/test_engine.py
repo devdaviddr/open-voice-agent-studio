@@ -183,6 +183,51 @@ async def test_search_tool_hidden_without_a_search_function():
     assert llm.stream_calls[-1]["tools"] is None
 
 
+async def test_memory_recalled_at_start_and_by_tool():  # MVP AC-15
+    spec = blank_spec()
+    spec.memory.enabled = True
+    llm = FakeLlm(
+        replies=[
+            ToolCall(id="1", name="recall_memory", arguments={"query": "pet"}),
+            "Of course, how is Rex?",
+        ],
+        choices=[0],
+    )
+    asked: list[tuple[str, int]] = []
+
+    async def recall(query, k):
+        asked.append((query, k))
+        return ["Their dog is called Rex."]
+
+    rec = Recorder()
+    session = TextSession(spec=spec, llm=llm, emit=rec, recall_memory=recall)
+    await session.start()
+    assert asked == [("", 5)] and session.recalled == ["Their dog is called Rex."]
+    await session.user_message("Do you remember my pet?")
+    assert asked[1] == ("pet", 5)
+    assert [m["recalled"][0]["fact"] for m in rec.of("memory")] == ["Their dog is called Rex."] * 2
+    system = llm.stream_calls[0]["messages"][0]["content"]
+    assert "What you remember about this caller:\n- Their dog is called Rex." in system
+    tools = [t["function"]["name"] for t in llm.stream_calls[0]["tools"]]
+    assert "recall_memory" in tools
+
+
+async def test_memory_off_never_recalls():
+    spec = blank_spec()
+    called = []
+
+    async def recall(query, k):
+        called.append(query)
+        return ["x"]
+
+    session = TextSession(
+        spec=spec, llm=FakeLlm(replies=["Hi."]), emit=Recorder(), recall_memory=recall
+    )
+    await session.start()
+    await session.user_message("Hello")
+    assert called == []
+
+
 def test_render_and_coerce():
     assert render("Hi {{a.b}} {{missing}}!", {"a": {"b": "Ana"}}) == "Hi Ana !"
     assert coerce(VariableDef(name="d", type="date"), "2026-12-01") == "2026-12-01"

@@ -88,7 +88,8 @@ POST /agents/{id}/versions/{n}/restore   PUT /agents/{id}/live {version}
 GET /agents/{id}/diff?from=draft|N&to=N
 GET|POST /knowledge (multipart upload)   GET|DELETE /knowledge/{id}   POST /knowledge/{id}/reindex
 POST /internal/sessions/{id}/knowledge/search {query, source_ids?, k} (runtime; attached sources only)
-GET|DELETE /agents/{id}/memories?end_user_id=
+GET|DELETE /agents/{id}/memories?end_user_id=   DELETE /agents/{id}/memories/{memory_id}
+POST /internal/sessions/{id}/memory/recall {query, k} (runtime; that session's agent and end user)
 POST /sessions {agent_id, target: "draft"|N, end_user_id?, variables?} → {session_id, runtime_ws_url, token}
 GET /sessions?agent_id=   GET /sessions/{id}   GET /sessions/{id}/events
 POST /tts → audio/wav (proxy to providers/tts-kokoro)
@@ -114,6 +115,13 @@ POST /stt (raw audio body, ?language=) → {text, language, duration_ms} (proxy 
 - **DD-7.** Canvas activity (FR-24) is derived in the studio from the existing runtime events
   (`node_enter`, `edge`, `token`, `assistant_message`, `tool_call`, `knowledge`, `memory`) plus the
   console's own sends and read-aloud playback; the runtime protocol does not change.
+- **DD-8.** Memory (FR-16) is scoped to one agent and one `end_user_id`, and only runs when memory
+  is on and the session has an end user. On session end the API queues `extract_memory`: the
+  workspace LLM returns up to 10 facts (json_schema, falling back to json_object) given the
+  transcript and the facts already known; facts within cosine similarity 0.9 of an existing one
+  are skipped; saved facts are recorded as a `memory_saved` session event. At session start there
+  is no query to rank by, so the five most recent facts are recalled; `recall_memory` ranks by
+  similarity to its query.
 - **DD-4.** The engine is synchronous per session (one turn at a time); concurrency comes from many
   sessions, not parallel turns.
 

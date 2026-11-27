@@ -38,7 +38,7 @@ updated: 2026-11-28
 | T-17 | Sessions page: list + transcript/events view | FR-20 | T-15 | AC-18 | 5 | [x] |
 | T-18 | Jobs table + in-process worker; knowledge upload, parse (md/txt/pdf), chunk, embed (fastembed), status | FR-15 | T-2 | AC-14 | 6 Knowledge | [x] |
 | T-19 | `search_knowledge` tool + auto top-k in engine; knowledge page + attach/narrow in builder | FR-15 | T-18, T-14, T-9 | AC-14 | 6 | [x] |
-| T-20 | Memory: extraction job on session end, recall at start, `recall_memory` tool, memories UI with delete | FR-16 | T-18, T-15 | AC-15 | 7 Memory | [ ] |
+| T-20 | Memory: extraction job on session end, recall at start, `recall_memory` tool, memories UI with delete | FR-16 | T-18, T-15 | AC-15 | 7 Memory | [x] |
 | T-21 | Playwright e2e (sign-up → template → edit → publish → chat → memory) with stub LLM; coverage gate ≥ 80% | NFR-1 | all | NFR-1 | 8 Release | [ ] |
 | T-23 | `providers/stt-whisper` (faster-whisper, `/health`, `/stt`), compose service + model volume, API `/v1/stt` proxy | FR-23 | T-1, T-5 | AC-21 | 9 Voice | [x] |
 | T-24 | Console push-to-talk: mic button, recording state, 60 s cap, transcript sent as the caller's turn, errors | FR-23 | T-23, T-16 | AC-21 | 9 | [x] |

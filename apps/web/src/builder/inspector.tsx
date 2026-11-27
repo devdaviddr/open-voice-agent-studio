@@ -17,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea'
 import type { FlowEdge, FlowNode, NodeKind } from './convert'
 import { KINDS } from './flow-components'
 import { useShallow } from 'zustand/react/shallow'
+import { MemoriesSheet } from './memories'
 import { useBuilder } from './store'
 
 type VoiceList = { default: string; voices: string[] }
@@ -277,6 +278,7 @@ function AgentSettingsPanel() {
           onCheckedChange={(enabled) => update((m) => ({ ...m, memory: { enabled } }))}
         />
       </div>
+      <MemoriesSheet />
     </div>
   )
 }

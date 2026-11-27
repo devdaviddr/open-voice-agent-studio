@@ -117,3 +117,47 @@ def test_agent_without_knowledge_never_searches(client, monkeypatch):
             pass
         ws.send_json({"type": "end"})
     assert called == []
+
+
+class MemoryApi(FakeApi):
+    recalls: list[tuple[str, int]] = []
+    end_user: str | None = "ana"
+
+    async def session(self, session_id: str) -> dict[str, Any]:
+        data = await super().session(session_id)
+        data["spec"]["memory"] = {"enabled": True}
+        data["end_user_id"] = MemoryApi.end_user
+        return data
+
+    async def recall_memory(self, session_id, query, k):
+        MemoryApi.recalls.append((query, k))
+        return ["Their dog is called Rex."]
+
+
+def first_reply(monkeypatch) -> FakeLlm:
+    llm = FakeLlm(replies=["Hello again."], choices=[2])
+    monkeypatch.setattr(main, "make_llm", lambda _: llm)
+    token = sign_session("s1", get_settings().internal_key)
+    with TestClient(main.app).websocket_connect(f"/v1/sessions/s1/stream?token={token}") as ws:
+        while ws.receive_json()["type"] != "assistant_message":
+            pass
+        ws.send_json({"type": "user_message", "text": "Hi"})
+        while ws.receive_json()["type"] != "assistant_message":
+            pass
+        ws.send_json({"type": "end"})
+    return llm
+
+
+def test_returning_caller_is_recalled(monkeypatch):  # MVP AC-15
+    MemoryApi.recalls, MemoryApi.end_user = [], "ana"
+    monkeypatch.setattr(main, "ApiClient", MemoryApi)
+    llm = first_reply(monkeypatch)
+    assert MemoryApi.recalls[0] == ("", 5)
+    assert "Their dog is called Rex." in llm.stream_calls[-1]["messages"][0]["content"]
+
+
+def test_anonymous_caller_is_not_recalled(monkeypatch):
+    MemoryApi.recalls, MemoryApi.end_user = [], None
+    monkeypatch.setattr(main, "ApiClient", MemoryApi)
+    first_reply(monkeypatch)
+    assert MemoryApi.recalls == []
