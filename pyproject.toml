@@ -1,5 +1,5 @@
 [tool.uv.workspace]
-members = ["packages/core", "services/api", "services/runtime", "providers/tts-kokoro"]
+members = ["packages/core", "services/api", "services/runtime", "providers/tts-kokoro", "providers/stt-whisper"]
 
 [tool.uv.sources]
 ovas-core = { workspace = true }
@@ -24,7 +24,7 @@ select = ["E", "F", "I", "B", "UP", "SIM", "ASYNC"]
 [tool.pyright]
 pythonVersion = "3.12"
 typeCheckingMode = "standard"
-include = ["packages/core/src", "services/api/src", "services/runtime/src", "providers/tts-kokoro/src"]
+include = ["packages/core/src", "services/api/src", "services/runtime/src", "providers/tts-kokoro/src", "providers/stt-whisper/src"]
 venvPath = "."
 venv = ".venv"
 
@@ -36,4 +36,4 @@ asyncio_default_fixture_loop_scope = "session"
 asyncio_default_test_loop_scope = "session"
 
 [tool.ruff.lint.isort]
-known-first-party = ["ovas_core", "ovas_api", "ovas_runtime", "ovas_tts_kokoro"]
+known-first-party = ["ovas_core", "ovas_api", "ovas_runtime", "ovas_tts_kokoro", "ovas_stt_whisper"]

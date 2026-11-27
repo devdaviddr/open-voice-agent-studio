@@ -25,6 +25,7 @@ canvas. Code name and prefix: `ovas`. MIT.
 | `services/runtime` | Runs sessions (text now, voice in M2) | FastAPI, WebSocket |
 | `packages/core` | `ovas_core`: AgentSpec schema, validation, workflow engine | Pydantic v2 |
 | `providers/tts-kokoro` | Kokoro-82M text-to-speech | FastAPI, kokoro-onnx |
+| `providers/stt-whisper` | Whisper speech-to-text (console push-to-talk) | FastAPI, faster-whisper |
 | `spec/` | Versioned specs (product, mvp, m0-foundation) | Markdown |
 | `docs/` | Architecture, concepts, ADRs | Markdown |
 
@@ -32,7 +33,7 @@ canvas. Code name and prefix: `ovas`. MIT.
 
 ```sh
 make install      # uv sync + pnpm install
-make up           # whole stack in Docker (web :5173, api :8000, runtime :8100, tts :8002)
+make up           # whole stack in Docker (web :5173, api :8000, runtime :8100, tts :8002, stt :8003)
 make dev          # backend in Docker, web with hot reload
 make check        # lint + typecheck + gen-check + tests (what CI runs)
 make test         # starts the throwaway test DB on 127.0.0.1:55432, runs all tests

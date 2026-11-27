@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://ovas:ovas@localhost:5432/ovas"
     runtime_url: str = "http://localhost:8100"
     tts_url: str = "http://localhost:8002"
+    stt_url: str = "http://localhost:8003"
     # Browser origins allowed to make state-changing requests (MVP FR-3).
     allowed_origins: list[str] = ["http://localhost:5173"]
     # Set true behind HTTPS so the session cookie is only sent over TLS.

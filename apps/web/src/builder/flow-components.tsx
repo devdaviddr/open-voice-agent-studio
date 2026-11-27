@@ -23,6 +23,57 @@ import { cn } from 'cn'
 import type { FlowEdge, FlowNode, NodeKind } from './convert'
 import { useShallow } from 'zustand/react/shallow'
 import { useBuilder } from './store'
+import type { Phase } from './activity'
+
+const PHASE_LABEL: Record<Phase, string> = {
+  waiting: 'your turn',
+  listening: 'listening',
+  thinking: 'thinking',
+  speaking: 'speaking',
+  tool: 'looking up',
+}
+
+const PHASE_TEXT: Record<Phase, string> = {
+  waiting: 'text-emerald-600 dark:text-emerald-400',
+  listening: 'text-rose-600 dark:text-rose-400',
+  thinking: 'text-violet-600 dark:text-violet-400',
+  speaking: 'text-sky-600 dark:text-sky-400',
+  tool: 'text-amber-600 dark:text-amber-400',
+}
+
+/** What the active node is doing, in its header (MVP FR-24). */
+function PhaseBadge({ phase }: { phase: Phase }) {
+  return (
+    <span
+      className={cn('ml-auto flex items-center gap-1 text-[10px] font-medium', PHASE_TEXT[phase])}
+      role="status"
+      aria-label={`Active in test: ${PHASE_LABEL[phase]}`}
+    >
+      {phase === 'speaking' ? (
+        <span className="ovas-bars" aria-hidden>
+          <span />
+          <span />
+          <span />
+        </span>
+      ) : phase === 'thinking' || phase === 'tool' ? (
+        <span className="ovas-dots tracking-tighter" aria-hidden>
+          <span>●</span>
+          <span>●</span>
+          <span>●</span>
+        </span>
+      ) : (
+        <span
+          className={cn(
+            'size-2 rounded-full',
+            phase === 'listening' ? 'animate-pulse bg-rose-500' : 'bg-emerald-500',
+          )}
+          aria-hidden
+        />
+      )}
+      {PHASE_LABEL[phase]}
+    </span>
+  )
+}
 
 /** True inside read-only canvases (version view): hide the live draft's problems. */
 export const ReadOnlyCanvas = createContext(false)
@@ -111,7 +162,8 @@ export const FlowNodeView = memo(function FlowNodeView(props: NodeProps<FlowNode
   const node = props as unknown as FlowNode
   const readOnly = useContext(ReadOnlyCanvas)
   const issues = useBuilder(useShallow((s) => (readOnly ? [] : s.issues.filter((i) => i.node_id === id))))
-  const active = useBuilder((s) => !readOnly && s.activeNodeId === id)
+  const phase = useBuilder((s) => (!readOnly && s.activity.nodeId === id ? s.activity.phase : null))
+  const visited = useBuilder((s) => !readOnly && s.activity.visitedNodes.includes(id))
   const k = KINDS[type as NodeKind]
   const Icon = k.icon
   if (type === 'note') {
@@ -133,7 +185,8 @@ export const FlowNodeView = memo(function FlowNodeView(props: NodeProps<FlowNode
         'bg-card text-card-foreground w-60 rounded-xl border shadow-sm',
         selected && 'ring-ring ring-2',
         issues.length > 0 && 'border-destructive/60',
-        active && 'shadow-[0_0_0_4px] shadow-emerald-500/50 transition-shadow',
+        visited && !phase && 'border-emerald-500/50',
+        phase && `ovas-phase ovas-phase-${phase}`,
       )}
     >
       {type !== 'start' && (
@@ -146,12 +199,7 @@ export const FlowNodeView = memo(function FlowNodeView(props: NodeProps<FlowNode
         <span className="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
           {k.name}
         </span>
-        {active && (
-          <span
-            className="ml-auto size-2 animate-pulse rounded-full bg-emerald-500"
-            aria-label="Active in test"
-          />
-        )}
+        {phase && <PhaseBadge phase={phase} />}
       </div>
       <div className="space-y-1.5 px-3 pt-1.5 pb-3">
         <div className="text-sm font-medium">{s.title}</div>
@@ -183,22 +231,31 @@ export const ConditionEdge = memo(function ConditionEdge(props: EdgeProps<FlowEd
   const c = props.data?.condition
   const readOnly = useContext(ReadOnlyCanvas)
   const hasIssue = useBuilder((s) => !readOnly && s.issues.some((i) => i.edge_id === props.id))
+  const firing = useBuilder((s) =>
+    !readOnly && s.activity.firing?.edgeId === props.id ? s.activity.firing.seq : 0,
+  )
+  const visited = useBuilder((s) => !readOnly && s.activity.visitedEdges.includes(props.id))
+  const trail = (firing || visited) && !hasIssue && !props.selected
   return (
     <>
       <BaseEdge
         id={props.id}
         path={path}
         markerEnd={props.markerEnd}
+        className={firing ? 'ovas-edge-firing' : undefined}
         style={{
           stroke: hasIssue
             ? 'var(--destructive)'
             : props.selected
               ? 'var(--ring)'
-              : 'var(--muted-foreground)',
-          strokeOpacity: props.selected || hasIssue ? 1 : 0.5,
-          strokeWidth: props.selected ? 2 : 1.25,
+              : trail
+                ? 'var(--color-emerald-500)'
+                : 'var(--muted-foreground)',
+          strokeOpacity: props.selected || hasIssue || firing ? 1 : visited ? 0.8 : 0.5,
+          strokeWidth: firing ? 2.5 : props.selected || visited ? 2 : 1.25,
         }}
       />
+      {firing > 0 && <EdgePulse key={firing} path={path} />}
       {c && (
         <EdgeLabelRenderer>
           <div
@@ -229,6 +286,21 @@ export const ConditionEdge = memo(function ConditionEdge(props: EdgeProps<FlowEd
     </>
   )
 })
+
+/** A dot that travels along a firing edge once; skipped with reduced motion (MVP FR-24). */
+function EdgePulse({ path }: { path: string }) {
+  if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)
+    return null
+  return (
+    <circle
+      r={4}
+      fill="var(--color-emerald-500)"
+      style={{ filter: 'drop-shadow(0 0 4px var(--color-emerald-500))' }}
+    >
+      <animateMotion dur="0.9s" repeatCount="1" fill="freeze" path={path} />
+    </circle>
+  )
+}
 
 export const nodeTypes = Object.fromEntries(Object.keys(KINDS).map((k) => [k, FlowNodeView]))
 export const edgeTypes = { condition: ConditionEdge }

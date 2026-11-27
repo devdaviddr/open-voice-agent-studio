@@ -18,6 +18,7 @@ import {
   type Meta,
   type NodeKind,
 } from './convert'
+import { IDLE, nextActivity, type Activity, type ActivityEvent } from './activity'
 
 export type SaveState = 'saved' | 'pending' | 'saving' | 'conflict' | 'error'
 
@@ -29,8 +30,8 @@ type State = Content & {
   /** Increments on every load so subscribers can tell a reload from an edit. */
   loadCount: number
   issues: Issue[]
-  /** Node the test console's session is in; highlighted on the canvas. */
-  activeNodeId: string | null
+  /** What the test console's session is doing, animated on the canvas (MVP FR-24). */
+  activity: Activity
   saveState: SaveState
   conflictRevision: number | null
   clipboard: { nodes: FlowNode[]; edges: FlowEdge[] } | null
@@ -49,10 +50,14 @@ type State = Content & {
   paste: () => void
   duplicateSelection: () => void
   setIssues: (issues: Issue[]) => void
-  setActiveNode: (id: string | null) => void
+  /** Feed a runtime or console event into `activity`. */
+  track: (e: ActivityEvent) => void
   setSaveState: (s: SaveState, conflictRevision?: number | null) => void
   markSaved: (revision: number) => void
 }
+
+/** How long a fired edge animates on the canvas. */
+export const FIRING_MS = 1400
 
 /** Time of the last content edit, for grouping undo steps. load() resets it. */
 let lastEdit = 0
@@ -107,7 +112,7 @@ export const useBuilder = create<State>()(
       edges: [],
       meta: {} as Meta,
       issues: [],
-      activeNodeId: null,
+      activity: IDLE,
       saveState: 'saved',
       conflictRevision: null,
       clipboard: null,
@@ -236,7 +241,18 @@ export const useBuilder = create<State>()(
       },
 
       setIssues: (issues) => set({ issues }),
-      setActiveNode: (activeNodeId) => set({ activeNodeId }),
+      track: (e) => {
+        const activity = nextActivity(get().activity, e)
+        set({ activity })
+        // A fired edge animates briefly, then stays marked as visited.
+        if (e.type === 'edge' && activity.firing) {
+          const { seq } = activity.firing
+          setTimeout(() => {
+            const now = get().activity
+            if (now.firing?.seq === seq) set({ activity: { ...now, firing: null } })
+          }, FIRING_MS)
+        }
+      },
       setSaveState: (saveState, conflictRevision = null) => set({ saveState, conflictRevision }),
       markSaved: (revision) => set({ revision, saveState: 'saved', conflictRevision: null }),
     }),

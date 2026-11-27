@@ -4,6 +4,7 @@ x-python: &python
     OVAS_DATABASE_URL: postgresql+asyncpg://ovas:ovas@db:5432/ovas
     OVAS_RUNTIME_URL: http://runtime:8100
     OVAS_TTS_URL: http://tts-kokoro:8002
+    OVAS_STT_URL: http://stt-whisper:8003
     OVAS_API_URL: http://api:8000
     # Development-only keys. Set your own in .env for anything shared (see .env.example).
     OVAS_SECRET_KEY: ${OVAS_SECRET_KEY:-dev-secret-key-change-me}
@@ -45,6 +46,14 @@ services:
     volumes:
       - kokoro-models:/models
 
+  stt-whisper:
+    build: { context: ., dockerfile: providers/stt-whisper/Dockerfile }
+    ports: ["8003:8003"]
+    environment:
+      OVAS_WHISPER_MODEL: ${OVAS_WHISPER_MODEL:-base}
+    volumes:
+      - whisper-models:/models
+
   db:
     image: pgvector/pgvector:pg17
     environment:
@@ -78,3 +87,4 @@ services:
 volumes:
   pgdata:
   kokoro-models:
+  whisper-models:
