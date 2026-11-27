@@ -1,6 +1,6 @@
 # ADR-0019: Encrypted, write-only secrets
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-28)
 - **Date:** 2026-11-27
 
 ## Context

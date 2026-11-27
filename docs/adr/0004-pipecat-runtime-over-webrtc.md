@@ -1,6 +1,6 @@
 # ADR-0004: Pipecat runtime over WebRTC
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-28)
 - **Date:** 2026-11-27
 
 ## Context

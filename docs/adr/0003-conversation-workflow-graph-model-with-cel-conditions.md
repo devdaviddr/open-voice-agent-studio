@@ -1,6 +1,6 @@
 # ADR-0003: Conversation-workflow graph model with CEL conditions
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-28)
 - **Date:** 2026-11-27
 
 ## Context

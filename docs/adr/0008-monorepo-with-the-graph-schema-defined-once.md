@@ -1,6 +1,6 @@
 # ADR-0008: Monorepo with the graph schema defined once
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-28)
 - **Date:** 2026-11-27
 
 ## Context

@@ -1,6 +1,6 @@
 # ADR-0010: Postgres with pgvector
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-28)
 - **Date:** 2026-11-27
 
 ## Context

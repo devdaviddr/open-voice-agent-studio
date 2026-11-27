@@ -1,6 +1,6 @@
 # ADR-0009: Separate control-plane API and runtime processes
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-28)
 - **Date:** 2026-11-27
 
 ## Context

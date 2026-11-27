@@ -1,6 +1,6 @@
 # ADR-0007: Spec-driven development
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-28)
 - **Date:** 2026-11-27
 
 ## Context

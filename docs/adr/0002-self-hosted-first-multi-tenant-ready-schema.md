@@ -1,6 +1,6 @@
 # ADR-0002: Self-hosted first, multi-tenant-ready schema
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-28)
 - **Date:** 2026-11-27
 
 ## Context

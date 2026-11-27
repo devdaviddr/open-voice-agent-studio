@@ -1,6 +1,6 @@
 # ADR-0005: Remove the Rust audio service
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-28)
 - **Date:** 2026-11-27
 
 ## Context
