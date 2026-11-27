@@ -37,3 +37,13 @@ asyncio_default_test_loop_scope = "session"
 
 [tool.ruff.lint.isort]
 known-first-party = ["ovas_core", "ovas_api", "ovas_runtime", "ovas_tts_kokoro", "ovas_stt_whisper"]
+
+[tool.coverage.run]
+# SQLAlchemy's async engine runs code in greenlets; trace them too or covered lines look missed.
+concurrency = ["greenlet", "thread"]
+source = ["ovas_api"]
+omit = ["*/openapi_export.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true

@@ -37,6 +37,7 @@ make up           # whole stack in Docker (web :5173, api :8000, runtime :8100, 
 make dev          # backend in Docker, web with hot reload
 make check        # lint + typecheck + gen-check + tests (what CI runs)
 make test         # starts the throwaway test DB on 127.0.0.1:55432, runs all tests
+make e2e          # Playwright end to end on a throwaway stack with the stub LLM (E2E_WEB_PORT, KEEP=1)
 make gen          # regenerate schema + TS types from ovas_core
 ```
 
