@@ -1,6 +1,6 @@
 # ADR-0006: Local-first providers behind a plugin interface
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-28)
 - **Date:** 2026-11-27
 
 ## Context

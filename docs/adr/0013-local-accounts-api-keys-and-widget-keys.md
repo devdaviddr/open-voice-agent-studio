@@ -1,6 +1,6 @@
 # ADR-0013: Local accounts, API keys and widget keys
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-28)
 - **Date:** 2026-11-27
 
 ## Context

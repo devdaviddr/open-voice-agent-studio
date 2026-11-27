@@ -1,6 +1,6 @@
 # ADR-0018: Observability and data retention
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-28)
 - **Date:** 2026-11-27
 
 ## Context

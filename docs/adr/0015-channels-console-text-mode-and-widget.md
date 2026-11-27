@@ -1,6 +1,6 @@
 # ADR-0015: Channels: console, text mode and widget
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-28)
 - **Date:** 2026-11-27
 
 ## Context

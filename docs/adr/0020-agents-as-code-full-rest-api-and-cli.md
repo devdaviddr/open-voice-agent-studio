@@ -1,6 +1,6 @@
 # ADR-0020: Agents as code: full REST API and CLI
 
-- **Status:** Proposed
+- **Status:** Accepted (2026-11-28)
 - **Date:** 2026-11-27
 
 ## Context
