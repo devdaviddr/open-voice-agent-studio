@@ -30,6 +30,11 @@ services:
     <<: *python
     build: { context: ., dockerfile: services/api/Dockerfile }
     ports: ["8000:8000"]
+    environment:
+      <<: *pyenv
+      OVAS_EMBEDDING_CACHE_DIR: /models/embeddings
+    volumes:
+      - embedding-models:/models  # knowledge embeddings model, downloaded on first index
     extra_hosts: ["host.docker.internal:host-gateway"]
     depends_on:
       db: { condition: service_healthy }
@@ -88,3 +93,4 @@ volumes:
   pgdata:
   kokoro-models:
   whisper-models:
+  embedding-models:

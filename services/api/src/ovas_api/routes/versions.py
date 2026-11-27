@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import func, select, update
 
 from ovas_api.auth import CurrentUser, Db
+from ovas_api.knowledge.service import knowledge_ids
 from ovas_api.models import Agent, AgentVersion, User
 from ovas_api.routes.agents import Draft, get_agent
 from ovas_core.diff import Change, diff
@@ -93,7 +94,8 @@ async def _spec(db: Db, agent: Agent, ref: str) -> AgentSpec:
 async def publish(agent_id: uuid.UUID, body: Publish, principal: CurrentUser, db: Db):
     agent = await get_agent(db, principal, agent_id)
     spec = AgentSpec.model_validate(agent.draft)
-    issues = [i for i in validate(spec) if i.severity == "error"]
+    known = await knowledge_ids(db, principal.workspace_id)
+    issues = [i for i in validate(spec, known) if i.severity == "error"]
     if issues:
         rejected = PublishRejected(
             detail="Fix the problems in the draft before publishing.", issues=issues

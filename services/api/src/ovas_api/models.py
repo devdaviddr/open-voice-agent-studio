@@ -5,19 +5,22 @@ import time
 import uuid
 from datetime import datetime
 
+from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     DateTime,
     ForeignKey,
     Index,
     Integer,
+    LargeBinary,
     String,
     Text,
     UniqueConstraint,
     func,
 )
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, deferred, mapped_column
 
 from ovas_api.db import Base
 
@@ -159,3 +162,54 @@ class SessionEvent(IdMixin, Base):
     seq: Mapped[int] = mapped_column(Integer)
     type: Mapped[str] = mapped_column(String(40))
     payload: Mapped[dict] = mapped_column(JSONB)
+
+
+EMBEDDING_DIM = 384
+
+
+class KnowledgeSource(IdMixin, Base):
+    """An uploaded document in the workspace knowledge base (MVP FR-15)."""
+
+    __tablename__ = "knowledge_sources"
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    name: Mapped[str] = mapped_column(String(300))
+    mime: Mapped[str] = mapped_column(String(100))
+    byte_size: Mapped[int] = mapped_column("bytes", BigInteger)
+    sha256: Mapped[str] = mapped_column(String(64))
+    # pending -> indexing -> ready | failed
+    status: Mapped[str] = mapped_column(String(20), default="pending")
+    chunk_count: Mapped[int] = mapped_column(Integer, default=0)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    content: Mapped[bytes] = deferred(mapped_column(LargeBinary))
+
+
+class KnowledgeChunk(IdMixin, Base):
+    __tablename__ = "knowledge_chunks"
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    source_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("knowledge_sources.id", ondelete="CASCADE"), index=True
+    )
+    ordinal: Mapped[int] = mapped_column(Integer)
+    text: Mapped[str] = mapped_column(Text)
+    embedding: Mapped[list[float]] = mapped_column(Vector(EMBEDDING_DIM))
+
+
+class Job(IdMixin, Base):
+    """Background work run by the API's in-process worker (indexing, later memory extraction)."""
+
+    __tablename__ = "jobs"
+    __table_args__ = (Index("ix_jobs_status_created", "status", "created_at"),)
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("workspaces.id", ondelete="CASCADE"), index=True
+    )
+    kind: Mapped[str] = mapped_column(String(50))
+    payload: Mapped[dict] = mapped_column(JSONB)
+    # pending -> running -> done | failed
+    status: Mapped[str] = mapped_column(String(20), default="pending")
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)

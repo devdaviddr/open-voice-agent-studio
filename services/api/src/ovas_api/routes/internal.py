@@ -6,11 +6,12 @@ from datetime import UTC, datetime
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Header, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 
 from ovas_api.auth import Db
 from ovas_api.config import get_settings
+from ovas_api.knowledge.service import Hit, search
 from ovas_api.models import Session, SessionEvent
 from ovas_api.routes.llm import ResolvedLlm, resolve_llm
 
@@ -94,3 +95,24 @@ async def end_session(session_id: uuid.UUID, body: SessionEnd, db: Db) -> None:
         s.variables = body.variables
         s.usage = body.usage
         await db.commit()
+
+
+class KnowledgeQuery(BaseModel):
+    query: str = Field(max_length=2000)
+    source_ids: list[str] | None = None  # null = every source attached to the agent
+    k: int = Field(default=4, ge=1, le=10)
+
+
+@router.post("/sessions/{session_id}/knowledge/search")
+async def search_knowledge(session_id: uuid.UUID, body: KnowledgeQuery, db: Db) -> list[Hit]:
+    """Search only the sources attached to the session's agent, in its workspace (MVP FR-15)."""
+    s = await _session(db, session_id)
+    attached = {r.get("source_id") for r in s.spec.get("knowledge", [])}
+    wanted = attached if body.source_ids is None else attached & set(body.source_ids)
+    ids: list[uuid.UUID] = []
+    for raw in wanted:
+        try:
+            ids.append(uuid.UUID(str(raw)))
+        except ValueError:
+            continue
+    return await search(db, s.workspace_id, body.query, ids, body.k)

@@ -69,3 +69,51 @@ def test_bad_token_rejected(client):
         client.websocket_connect("/v1/sessions/s1/stream?token=nope") as ws,
     ):
         ws.receive_json()
+
+
+class KnowledgeApi(FakeApi):
+    searches: list[tuple[str, list[str] | None, int]] = []
+
+    async def session(self, session_id: str) -> dict[str, Any]:
+        data = await super().session(session_id)
+        data["spec"]["knowledge"] = [{"source_id": "src-1"}]
+        return data
+
+    async def search_knowledge(self, session_id, query, source_ids, k):
+        KnowledgeApi.searches.append((query, source_ids, k))
+        return [{"source": "handbook.md", "text": "A cleaning costs 145 dollars.", "score": 0.9}]
+
+
+def test_attached_knowledge_is_searched(monkeypatch):  # MVP AC-14
+    KnowledgeApi.searches = []
+    monkeypatch.setattr(main, "ApiClient", KnowledgeApi)
+    llm = FakeLlm(replies=["A cleaning costs 145 dollars."], choices=[2])
+    monkeypatch.setattr(main, "make_llm", lambda _: llm)
+    token = sign_session("s1", get_settings().internal_key)
+    with TestClient(main.app).websocket_connect(f"/v1/sessions/s1/stream?token={token}") as ws:
+        while ws.receive_json()["type"] != "assistant_message":
+            pass
+        ws.send_json({"type": "user_message", "text": "How much is a cleaning?"})
+        events = []
+        while not events or events[-1]["type"] != "assistant_message":
+            events.append(ws.receive_json())
+        ws.send_json({"type": "end"})
+    assert KnowledgeApi.searches and KnowledgeApi.searches[0][0] == "How much is a cleaning?"
+    knowledge = next(e for e in events if e["type"] == "knowledge")
+    assert knowledge["results"][0]["source"] == "handbook.md"
+    system = llm.stream_calls[-1]["messages"][0]["content"]
+    assert "145 dollars" in system  # auto top-k injected into the prompt
+
+
+def test_agent_without_knowledge_never_searches(client, monkeypatch):
+    called = []
+    monkeypatch.setattr(FakeApi, "search_knowledge", lambda *a: called.append(a), raising=False)
+    token = sign_session("s1", get_settings().internal_key)
+    with client.websocket_connect(f"/v1/sessions/s1/stream?token={token}") as ws:
+        while ws.receive_json()["type"] != "assistant_message":
+            pass
+        ws.send_json({"type": "user_message", "text": "How much is a cleaning?"})
+        while ws.receive_json()["type"] != "assistant_message":
+            pass
+        ws.send_json({"type": "end"})
+    assert called == []

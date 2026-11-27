@@ -16,6 +16,9 @@ dependencies = [
     "argon2-cffi>=25.1.0",
     "pydantic[email]>=2.14.4",
     "cryptography>=50.0.2",
+    "fastembed>=0.7",
+    "pypdf>=6.0",
+    "python-multipart>=0.0.20",
 ]
 
 [tool.uv.sources]

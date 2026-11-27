@@ -7,16 +7,17 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-// jsdom lacks matchMedia, which next-themes and Base UI read.
-Object.defineProperty(window, 'matchMedia', {
-  value: (query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    addListener: () => {},
-    removeListener: () => {},
-    dispatchEvent: () => false,
-  }),
-})
+// jsdom lacks matchMedia, which next-themes and Base UI read. (Node-environment tests have no window.)
+if (typeof window !== 'undefined')
+  Object.defineProperty(window, 'matchMedia', {
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    }),
+  })

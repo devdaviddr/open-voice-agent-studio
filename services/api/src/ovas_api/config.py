@@ -25,6 +25,11 @@ class Settings(BaseSettings):
     default_llm_url: str = "http://localhost:11434/v1"
     default_llm_model: str = "qwen3.5:9b"
     default_llm_reasoning_effort: str | None = "none"
+    # Knowledge base embeddings (MVP FR-15): downloaded on first use into the cache dir.
+    embedding_model: str = "BAAI/bge-small-en-v1.5"
+    embedding_cache_dir: str | None = None
+    # Run the background job worker inside the API process.
+    job_worker: bool = True
 
 
 @lru_cache

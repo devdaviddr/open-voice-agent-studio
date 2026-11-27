@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select, update
 
 from ovas_api.auth import CurrentUser, Db
+from ovas_api.knowledge.service import knowledge_ids
 from ovas_api.models import Agent
 from ovas_core.spec import AgentSpec
 from ovas_core.templates import TEMPLATES
@@ -174,4 +175,4 @@ async def validate_spec(
     agent_id: uuid.UUID, spec: AgentSpec, principal: CurrentUser, db: Db
 ) -> Validation:
     await get_agent(db, principal, agent_id)
-    return Validation(issues=validate(spec))
+    return Validation(issues=validate(spec, await knowledge_ids(db, principal.workspace_id)))

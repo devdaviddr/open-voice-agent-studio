@@ -72,8 +72,21 @@ async def stream(ws: WebSocket, session_id: str, token: str = "") -> None:
         except Exception:  # keep the conversation going; the events are logged instead
             log.exception("could not store %d events for %s", len(batch), session_id)
 
+    spec = AgentSpec.model_validate(data["spec"])
+
+    async def search_knowledge(
+        query: str, source_ids: list[str] | None, k: int
+    ) -> list[dict[str, Any]]:
+        try:
+            return await api.search_knowledge(session_id, query, source_ids, k)
+        except Exception:  # a failed lookup should not end the conversation
+            log.exception("knowledge search failed in %s", session_id)
+            return []
+
     session = TextSession(
-        spec=AgentSpec.model_validate(data["spec"]),
+        spec=spec,
+        # MVP FR-15: only agents with attached sources get the tool and auto top-k.
+        search_knowledge=search_knowledge if spec.knowledge else None,
         llm=make_llm(data["llm"]),
         emit=emit,
         default_model=data["llm"]["model"],

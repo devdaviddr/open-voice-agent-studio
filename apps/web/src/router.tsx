@@ -8,12 +8,14 @@ import {
 } from '@tanstack/react-router'
 import { agentQuery, agentsQuery, draftQuery } from '@/api/agents'
 import { meQuery } from '@/api/auth'
+import { knowledgeQuery } from '@/api/knowledge'
 import { llmQuery } from '@/api/llm'
 import { sessionQuery, sessionsQuery } from '@/api/sessions'
 import { AppShell } from '@/components/layout/app-shell'
 import { AuthPage } from './routes/auth-page'
 import { BuilderPage } from './builder/builder-page'
 import { AgentsPage } from './routes/agents-page'
+import { KnowledgePage } from './routes/knowledge-page'
 import { PlaygroundPage, ServicesPage, SettingsPage } from './routes/pages'
 import { SessionDetailPage, SessionsPage } from './routes/sessions-page'
 
@@ -115,6 +117,12 @@ const sessionRoute = createRoute({
     return <SessionDetailPage sessionId={sessionRoute.useParams().sessionId} />
   },
 })
+const knowledgeRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/knowledge',
+  loader: ({ context }) => context.queryClient.ensureQueryData(knowledgeQuery),
+  component: KnowledgePage,
+})
 const playgroundRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/playground/tts',
@@ -141,6 +149,7 @@ const routeTree = rootRoute.addChildren([
       agentsRoute,
       sessionsRoute,
       sessionRoute,
+      knowledgeRoute,
       playgroundRoute,
       servicesRoute,
       settingsRoute,
