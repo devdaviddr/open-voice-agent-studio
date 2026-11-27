@@ -24,8 +24,8 @@ updated: 2026-11-27
 | T-2 | Postgres + pgvector in compose; SQLAlchemy async; Alembic baseline; api `/health` aggregates | FR-22 | T-1 | AC-20 | 1 | [x] |
 | T-3 | `ovas-core` AgentSpec models (full product schema), JSON Schema → TS codegen, `gen-check` | FR-22, FR-6 | T-1 | AC-20 | 1 | [x] |
 | T-4 | CI workflow, lefthook, root + package CLAUDE.md, AGENTS.md, `.claude/rules`, format-on-edit + guard hooks with tests | FR-22 | T-1 | AC-20 | 1 | [x] |
-| T-5 | Auth: users, workspaces, memberships, sessions, argon2id, sign-up/in/out, open sign-up setting, rate limit, Origin/content-type guard | FR-1, FR-2, FR-3 | T-2 | AC-1, AC-2, AC-3 | 2 Auth | [ ] |
-| T-6 | Web: TanStack Router + Query, generated OpenAPI client, sign-in/sign-up pages, auth guard, app shell (sidebar, theme) | FR-1 | T-5, T-3 | AC-1 (e2e) | 2 | [ ] |
+| T-5 | Auth: users, workspaces, memberships, sessions, argon2id, sign-up/in/out, open sign-up setting, rate limit, Origin/content-type guard | FR-1, FR-2, FR-3 | T-2 | AC-1, AC-2, AC-3 | 2 Auth | [x] |
+| T-6 | Web: TanStack Router + Query, generated OpenAPI client, sign-in/sign-up pages, auth guard, app shell (sidebar, theme) | FR-1 | T-5, T-3 | AC-1 (e2e) | 2 | [x] |
 | T-7 | Agents API: CRUD, duplicate, from-template (receptionist), draft GET/PUT with revision + 409 | FR-4, FR-7 | T-5 | AC-4, AC-6 | 3 Builder | [ ] |
 | T-8 | Validation in `ovas-core` (graph rules, CEL parse, variable references) + `/validate` | FR-8 | T-3 | AC-7 | 3 | [ ] |
 | T-9 | Builder UI layout A: palette, canvas (MVP node types, condition edges), inspector per node/edge, agent settings, variables panel | FR-5, FR-6, FR-9, FR-13 (declare) | T-6, T-7 | AC-5 | 3 | [ ] |
