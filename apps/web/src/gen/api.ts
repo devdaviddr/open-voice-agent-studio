@@ -93,6 +93,26 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/internal/sessions/{session_id}/memory/recall': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * Recall Memory
+     * @description Facts about this session's end user for its agent (MVP FR-16).
+     */
+    post: operations['recall_memory_internal_sessions__session_id__memory_recall_post']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/v1/agents': {
     parameters: {
       query?: never
@@ -197,6 +217,44 @@ export interface paths {
     put: operations['set_live_v1_agents__agent_id__live_put']
     post?: never
     delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/agents/{agent_id}/memories': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** List Memories */
+    get: operations['list_memories_v1_agents__agent_id__memories_get']
+    put?: never
+    post?: never
+    /**
+     * Forget End User
+     * @description Forget everything this agent remembers about one end user.
+     */
+    delete: operations['forget_end_user_v1_agents__agent_id__memories_delete']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/v1/agents/{agent_id}/memories/{memory_id}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    /** Delete Memory */
+    delete: operations['delete_memory_v1_agents__agent_id__memories__memory_id__delete']
     options?: never
     head?: never
     patch?: never
@@ -1379,6 +1437,38 @@ export interface components {
       /** Workspace Name */
       workspace_name: string
     }
+    /** MemoryOut */
+    MemoryOut: {
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string
+      /** End User Id */
+      end_user_id: string
+      /** Fact */
+      fact: string
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string
+      /** Session Id */
+      session_id: string | null
+    }
+    /** MemoryQuery */
+    MemoryQuery: {
+      /**
+       * K
+       * @default 5
+       */
+      k: number
+      /**
+       * Query
+       * @default
+       */
+      query: string
+    }
     /** MemorySettings */
     'MemorySettings-Input': {
       /**
@@ -2119,6 +2209,8 @@ export type LlmSettingsInput = components['schemas']['LlmSettings-Input']
 export type LlmSettingsOutput = components['schemas']['LlmSettings-Output']
 export type LlmTest = components['schemas']['LlmTest']
 export type Me = components['schemas']['Me']
+export type MemoryOut = components['schemas']['MemoryOut']
+export type MemoryQuery = components['schemas']['MemoryQuery']
 export type MemorySettingsInput = components['schemas']['MemorySettings-Input']
 export type MemorySettingsOutput = components['schemas']['MemorySettings-Output']
 export type NoteData = components['schemas']['NoteData']
@@ -2322,6 +2414,43 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['Hit'][]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  recall_memory_internal_sessions__session_id__memory_recall_post: {
+    parameters: {
+      query?: never
+      header?: {
+        'x-internal-key'?: string | null
+      }
+      path: {
+        session_id: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['MemoryQuery']
+      }
+    }
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': string[]
         }
       }
       /** @description Validation Error */
@@ -2677,6 +2806,106 @@ export interface operations {
         content: {
           'application/json': components['schemas']['VersionSummary']
         }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  list_memories_v1_agents__agent_id__memories_get: {
+    parameters: {
+      query?: {
+        end_user_id?: string | null
+      }
+      header?: never
+      path: {
+        agent_id: string
+      }
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['MemoryOut'][]
+        }
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  forget_end_user_v1_agents__agent_id__memories_delete: {
+    parameters: {
+      query: {
+        end_user_id: string
+      }
+      header?: never
+      path: {
+        agent_id: string
+      }
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['HTTPValidationError']
+        }
+      }
+    }
+  }
+  delete_memory_v1_agents__agent_id__memories__memory_id__delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        agent_id: string
+        memory_id: string
+      }
+      cookie?: {
+        ovas_session?: string | null
+      }
+    }
+    requestBody?: never
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
       }
       /** @description Validation Error */
       422: {

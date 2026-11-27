@@ -16,6 +16,7 @@ from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from ovas_api.knowledge.service import index_source
+from ovas_api.memory.service import extract_for_session
 from ovas_api.models import Job
 
 log = logging.getLogger(__name__)
@@ -28,7 +29,14 @@ async def _index_knowledge(db: AsyncSession, workspace_id: uuid.UUID, p: dict[st
     await index_source(db, workspace_id, uuid.UUID(p["source_id"]))
 
 
-HANDLERS: dict[str, Handler] = {"index_knowledge": _index_knowledge}
+async def _extract_memory(db: AsyncSession, workspace_id: uuid.UUID, p: dict[str, Any]) -> None:
+    await extract_for_session(db, workspace_id, uuid.UUID(p["session_id"]))
+
+
+HANDLERS: dict[str, Handler] = {
+    "index_knowledge": _index_knowledge,
+    "extract_memory": _extract_memory,
+}
 
 _wake = asyncio.Event()
 

@@ -83,8 +83,17 @@ async def stream(ws: WebSocket, session_id: str, token: str = "") -> None:
             log.exception("knowledge search failed in %s", session_id)
             return []
 
+    async def recall_memory(query: str, k: int) -> list[str]:
+        try:
+            return await api.recall_memory(session_id, query, k)
+        except Exception:  # a failed recall should not end the conversation
+            log.exception("memory recall failed in %s", session_id)
+            return []
+
     session = TextSession(
         spec=spec,
+        # MVP FR-16: memory needs it switched on and a known end user.
+        recall_memory=recall_memory if spec.memory.enabled and data.get("end_user_id") else None,
         # MVP FR-15: only agents with attached sources get the tool and auto top-k.
         search_knowledge=search_knowledge if spec.knowledge else None,
         llm=make_llm(data["llm"]),

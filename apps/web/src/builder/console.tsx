@@ -54,8 +54,13 @@ function describe(e: Record<string, unknown>): Item | null {
       return { kind: 'event', text: `tool ${e.name}(${JSON.stringify(e.arguments)})` }
     case 'knowledge':
       return { kind: 'event', text: `knowledge “${e.query}”: ${(e.results as unknown[]).length} results` }
-    case 'memory':
-      return { kind: 'event', text: `memory recalled ${(e.recalled as unknown[]).length} facts` }
+    case 'memory': {
+      const facts = (e.recalled as { fact: string }[]).map((f) => f.fact)
+      return {
+        kind: 'event',
+        text: facts.length ? `remembered: ${facts.join(' · ')}` : 'no memories of this caller yet',
+      }
+    }
     case 'summary':
       return { kind: 'event', text: `summarised ${e.dropped_messages} older messages` }
     case 'error':

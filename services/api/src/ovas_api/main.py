@@ -16,6 +16,7 @@ from ovas_api.routes import (
     internal,
     knowledge,
     llm,
+    memories,
     sessions,
     settings,
     stt,
@@ -46,6 +47,7 @@ app.include_router(stt.router)
 app.include_router(agents.router)
 app.include_router(versions.router)
 app.include_router(knowledge.router)
+app.include_router(memories.router)
 app.include_router(llm.router)
 app.include_router(sessions.router)
 app.include_router(internal.router)

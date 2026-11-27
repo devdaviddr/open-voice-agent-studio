@@ -38,5 +38,12 @@ class ApiClient:
         res.raise_for_status()
         return res.json()
 
+    async def recall_memory(self, session_id: str, query: str, k: int) -> list[str]:
+        res = await self.http.post(
+            f"/internal/sessions/{session_id}/memory/recall", json={"query": query, "k": k}
+        )
+        res.raise_for_status()
+        return res.json()
+
     async def aclose(self) -> None:
         await self.http.aclose()
