@@ -19,7 +19,7 @@ export function SpeakCard() {
   const audioRef = useRef<HTMLAudioElement>(null)
 
   useEffect(() => {
-    fetch('/api/voices')
+    fetch('/api/v1/voices')
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
       .then((data: VoiceList) => {
         setVoices(data.voices)
@@ -39,7 +39,7 @@ export function SpeakCard() {
     setBusy(true)
     setError(null)
     try {
-      const res = await fetch('/api/tts', {
+      const res = await fetch('/api/v1/tts', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ text, voice, speed }),

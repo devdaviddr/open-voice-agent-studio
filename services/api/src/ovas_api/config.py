@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     tts_url: str = "http://localhost:8002"
     # Browser origins allowed to make state-changing requests (MVP FR-3).
     allowed_origins: list[str] = ["http://localhost:5173"]
+    # Set true behind HTTPS so the session cookie is only sent over TLS.
+    cookie_secure: bool = False
+    session_idle_days: int = 14
 
 
 @lru_cache
