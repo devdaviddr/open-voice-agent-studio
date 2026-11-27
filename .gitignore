@@ -1,0 +1,19 @@
+# Node
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+
+# Rust
+target/
+
+# Env and OS
+.env
+.env.*
+!.env.example
+.DS_Store

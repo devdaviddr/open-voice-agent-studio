@@ -1,0 +1,18 @@
+services:
+  frontend:
+    build: ./frontend
+    ports: ["5173:5173"]
+    environment:
+      AGENT_URL: http://agent:8000
+    depends_on: [agent]
+
+  agent:
+    build: ./agent
+    ports: ["8000:8000"]
+    environment:
+      AUDIO_URL: http://audio:8001
+    depends_on: [audio]
+
+  audio:
+    build: ./audio
+    ports: ["8001:8001"]
