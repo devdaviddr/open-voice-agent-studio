@@ -44,4 +44,4 @@ Foundation (`spec/m0-foundation`): monorepo, Postgres with pgvector and migratio
 
 Initial skeleton: React frontend, Python agent service, Rust audio service, Docker Compose.
 
-[0.3.0]: https://github.com/devdaviddr/open-voice-agent-studio/compare/v0.2.0...v0.3.0
+[0.3.0]: https://github.com/devdaviddr/open-voice-agent-studio/releases/tag/v0.3.0
